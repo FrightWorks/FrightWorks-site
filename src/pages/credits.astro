@@ -1,0 +1,72 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Credits" description="The people and projects behind FrightWorks.">
+  <section class="wrap page">
+    <h1 class="display">Credits</h1>
+    <div class="prose">
+      <h2>FrightWorks</h2>
+      <ul>
+        <li><a href="https://github.com/Loneranger419">Loneranger419</a></li>
+        <li>
+          Fright Wrangler, Master of Mysteries, and Scooby Snack Technician:
+          <a href="https://github.com/BitsofBitsofBitsofBits">BitsofBitsofBits</a>
+        </li>
+      </ul>
+
+      <h2>Built on</h2>
+      <ul>
+        <li>
+          <a href="https://github.com/josiahg2502-glitch/Scooby-Doo-Refrightened">Scooby-Doo: Refrightened</a> by JosiahG,
+          the original port FrightWorks continues
+        </li>
+        <li>
+          <a href="https://github.com/patchzyy/Wiicompiled">WiiCompiled</a> by patchzyy and contributors (GPLv3)
+        </li>
+        <li>Aurora by Luke Street (MIT)</li>
+      </ul>
+
+      <h2>Art and assets</h2>
+      <ul>
+        <li>
+          HD texture pack by <strong>dogerki</strong> (<a
+            href="https://forums.dolphin-emu.org/Thread-scooby-doo-night-of-100-frights-hd-texture-pack-ai"
+            >Dolphin forums</a
+          >)
+        </li>
+        <li>Button prompts from <a href="https://kenney.nl/assets/input-prompts">Kenney's Input Prompts</a> (CC0)</li>
+        <li>
+          Lettering: <a href="https://fonts.google.com/specimen/Luckiest+Guy">Luckiest Guy</a> by Astigmatic (Apache 2.0).
+          Site text: <a href="https://fonts.google.com/specimen/Figtree">Figtree</a> by Erik Kennedy (OFL)
+        </li>
+      </ul>
+
+      <h2>Wanted: a launcher artist</h2>
+      <p>
+        The launcher's haunted-mansion art is a placeholder. We're looking for an artist to redraw it closer to the look
+        of the original show: painted backgrounds, spooky colors, a creepy old mansion on a stormy night. You'd be credited
+        here, in the launcher, in the game's credits and in the release notes.
+        <a href="https://github.com/FrightWorks/FrightWorks-no100f#wanted-an-artist-for-the-launcher">What's needed</a>.
+      </p>
+
+      <h2>Legal</h2>
+      <p>
+        Scooby-Doo ™ &amp; © Hanna-Barbera / Warner Bros. Night of 100 Frights © THQ / Warner Bros. Interactive, developed
+        by Heavy Iron Studios. FrightWorks is an unofficial fan project, not affiliated with or endorsed by them. Our
+        repositories contain no game code or assets; the game's data is read from your own copy.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page {
+    padding-block: 56px 96px;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    color: var(--lantern);
+  }
+</style>

@@ -1,0 +1,95 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getLatestRelease } from '../lib/releases';
+
+interface Props {
+  game: CollectionEntry<'games'>;
+}
+const { game } = Astro.props;
+const { title, status, original, summary, cover, coverAlt, repo } = game.data;
+const playable = status === 'playable';
+const release = playable && repo ? await getLatestRelease(repo) : null;
+const href = `/games/${game.id}/`;
+---
+
+<article class:list={['card', { soon: !playable }]}>
+  {
+    cover && (
+      <Image src={cover} alt={coverAlt ?? ''} widths={[480, 800, 1200]} sizes="(min-width: 800px) 600px, 100vw" class="cover" />
+    )
+  }
+  <div class="body">
+    <div class="chips">
+      {playable ? <span class="chip chip--playable">Playable</span> : <span class="chip chip--soon">Coming soon</span>}
+      {original && <span class="chip">{original}</span>}
+    </div>
+    <h3 class="display">{title}</h3>
+    <p class="lead">{summary}</p>
+    {
+      playable ? (
+        <a href={href} class="more">
+          {release ? `Download ${release.tag}` : 'Download'} <span aria-hidden="true">→</span>
+        </a>
+      ) : (
+        <a href="https://github.com/FrightWorks" class="more more--quiet">
+          Follow the org on GitHub <span aria-hidden="true">→</span>
+        </a>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .card {
+    background: var(--panel);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .card.soon {
+    background: var(--panel-dim);
+    border: 2px dashed var(--line-dashed);
+    justify-content: center;
+    min-height: 360px;
+  }
+  .cover {
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    object-fit: cover;
+  }
+  .body {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .soon .body {
+    padding: 36px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h3 {
+    margin: 0;
+    font-size: 2rem;
+  }
+  .more {
+    margin-top: 6px;
+    color: var(--lantern);
+    font-weight: 700;
+  }
+  .more:hover {
+    color: var(--moon);
+  }
+  .more--quiet {
+    color: var(--moon);
+    font-weight: 600;
+  }
+  .more--quiet:hover {
+    color: var(--lantern);
+  }
+</style>

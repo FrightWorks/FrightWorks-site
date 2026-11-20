@@ -1,0 +1,53 @@
+---
+interface Props {
+  overlay?: boolean;
+}
+const { overlay = false } = Astro.props;
+---
+
+<header class:list={['site-header', { overlay }]}>
+  <div class="wrap bar">
+    <a href="/" class="logo display">FrightWorks</a>
+    <nav aria-label="Main">
+      <a href="/#games">Games</a>
+      <a href="/games/no100f/#download">Download</a>
+      <a href="/credits/">Credits</a>
+      <a href="https://github.com/FrightWorks">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 2;
+  }
+  .site-header:not(.overlay) {
+    border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding-block: 24px;
+  }
+  .logo {
+    font-size: 1.875rem;
+    color: var(--lantern);
+  }
+  .logo:hover {
+    color: var(--moon);
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .overlay nav a {
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+  }
+</style>

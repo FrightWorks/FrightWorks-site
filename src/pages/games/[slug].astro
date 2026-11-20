@@ -1,0 +1,287 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import DownloadIcon from '../../components/DownloadIcon.astro';
+import { getDownloads } from '../../lib/downloads';
+import { formatDate } from '../../lib/releases';
+
+export async function getStaticPaths() {
+  const games = await getCollection('games');
+  return games.map((game) => ({ params: { slug: game.id }, props: { game } }));
+}
+
+interface Props {
+  game: CollectionEntry<'games'>;
+}
+
+const { game } = Astro.props;
+const { title, status, original, summary, hero, heroAlt, cover, coverAlt, screenshots, requirements } = game.data;
+const playable = status === 'playable';
+const { Content } = await render(game);
+const dl = playable ? await getDownloads(game) : null;
+const banner = hero ?? cover;
+const bannerAlt = hero ? heroAlt : coverAlt;
+const og = banner ? await getImage({ src: banner, width: 1200, format: 'jpg' }) : undefined;
+---
+
+<Base title={title} description={summary} image={og?.src}>
+  <section class="banner">
+    {
+      banner && (
+        <Image
+          src={banner}
+          alt={bannerAlt ?? ''}
+          widths={[768, 1280, 1920, 2560]}
+          sizes="100vw"
+          loading="eager"
+          fetchpriority="high"
+          class="banner-img"
+        />
+      )
+    }
+    <div class="banner-shade" aria-hidden="true"></div>
+    <div class="wrap banner-copy">
+      <div class="chips">
+        {playable ? <span class="chip chip--playable">Playable</span> : <span class="chip chip--soon">Coming soon</span>}
+        {original && <span class="chip">{original}</span>}
+      </div>
+      <h1 class="display">{title}</h1>
+      <p class="intro">{summary}</p>
+    </div>
+  </section>
+
+  {
+    dl && (
+      <section class="wrap" id="download">
+        <div class="download">
+          <div class="dl-head">
+            <h2 class="display">Download</h2>
+            {dl.release ? (
+              <p class="lead">
+                <a href={dl.release.url}>{dl.release.tag}</a>, released {formatDate(dl.release.publishedAt)}
+              </p>
+            ) : (
+              <p class="lead">
+                <a href={dl.releasesUrl}>Latest release on GitHub</a>
+              </p>
+            )}
+          </div>
+          <ul class="files">
+            {dl.windows && (
+              <li>
+                <div>
+                  <code>{dl.windows.file}</code>
+                  <span>Windows installer. No admin rights, updates itself.</span>
+                </div>
+                <a class="btn btn--primary" href={dl.windows.url}>
+                  <DownloadIcon /> Windows
+                </a>
+              </li>
+            )}
+            {dl.zip && (
+              <li>
+                <div>
+                  <code>{dl.zip.file}</code>
+                  <span>Portable zip. Everything in one folder.</span>
+                </div>
+                <a class="btn btn--ghost" href={dl.zip.url}>
+                  Zip
+                </a>
+              </li>
+            )}
+            {dl.linux && (
+              <li>
+                <div>
+                  <code>{dl.linux.file}</code>
+                  <span>Linux x86_64, beta. Needs Vulkan and FUSE.</span>
+                </div>
+                <a class="btn btn--ghost" href={dl.linux.url}>
+                  Linux (beta)
+                </a>
+              </li>
+            )}
+          </ul>
+          {requirements && (
+            <p class="req">
+              You need your own disc: <strong>{requirements}</strong>. No game data is included.
+            </p>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="wrap body">
+    <article class="prose">
+      <Content />
+    </article>
+  </section>
+
+  {
+    screenshots.length > 0 && (
+      <section class="wrap shots-wrap">
+        <h2 class="display section-title">Screenshots</h2>
+        <div class="shots">
+          {screenshots.map((s) => (
+            <figure>
+              <Image src={s.src} alt={s.caption} widths={[480, 800, 1200]} sizes="(min-width: 900px) 400px, 100vw" />
+              <figcaption>{s.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .banner {
+    position: relative;
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    background: var(--panel-dim);
+  }
+  .banner-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .banner-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(13, 16, 41, 0.25) 0%, rgba(13, 16, 41, 0.6) 55%, var(--night) 100%);
+  }
+  .banner-copy {
+    position: relative;
+    margin-top: auto;
+    width: 100%;
+    padding-top: 96px;
+    padding-bottom: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(2.75rem, 6vw, 5rem);
+    text-shadow:
+      0 4px 0 var(--night),
+      0 10px 40px rgba(0, 0, 0, 0.6);
+  }
+  .intro {
+    margin: 0;
+    max-width: 640px;
+    font-size: 1.1875rem;
+    color: var(--moon-soft);
+  }
+
+  .download {
+    background: var(--panel);
+    border-radius: 24px;
+    padding: clamp(24px, 4vw, 40px);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-margin-top: 24px;
+  }
+  .dl-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+  }
+  .dl-head h2 {
+    margin: 0;
+    font-size: 2.25rem;
+  }
+  .dl-head a {
+    color: var(--lantern);
+    font-weight: 600;
+  }
+  .files {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .files li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding-block: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .files li > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .files code {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .files span {
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+  .files .btn {
+    font-size: 1rem;
+    padding: 12px 22px;
+  }
+  .req {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--muted);
+  }
+  .req strong {
+    color: var(--moon);
+  }
+
+  .body {
+    padding-block: 32px 48px;
+  }
+
+  .shots-wrap {
+    padding-bottom: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .shots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 20px;
+  }
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  figure :global(img) {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 3px solid var(--line);
+  }
+  figcaption {
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+</style>

@@ -1,0 +1,336 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import GameCard from '../components/GameCard.astro';
+import DownloadIcon from '../components/DownloadIcon.astro';
+import { getDownloads } from '../lib/downloads';
+
+const games = (await getCollection('games')).sort((a, b) => a.data.order - b.data.order);
+const featured = games.find((g) => g.data.status === 'playable');
+if (!featured) throw new Error('The home page needs at least one playable game.');
+
+const dl = await getDownloads(featured);
+const { hero, heroAlt, highlights, screenshots, requirements } = featured.data;
+const gameUrl = `/games/${featured.id}/`;
+const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : undefined;
+---
+
+<Base overlayHeader image={og?.src}>
+  <section class="hero">
+    {
+      hero && (
+        <Image
+          src={hero}
+          alt={heroAlt ?? ''}
+          widths={[768, 1280, 1920, 2560]}
+          sizes="100vw"
+          loading="eager"
+          fetchpriority="high"
+          class="hero-img"
+        />
+      )
+    }
+    <div class="hero-shade" aria-hidden="true"></div>
+    <Header overlay />
+    <div class="wrap hero-copy">
+      {
+        dl?.release && (
+          <a class="badge" href={dl.release.url}>
+            {dl.release.tag} out now · Windows &amp; Linux (beta)
+          </a>
+        )
+      }
+      <h1 class="display">
+        {featured.data.title},<br /><span>now on PC.</span>
+      </h1>
+      <p class="intro">
+        A native PC port of the 2002 GameCube classic. The original code is recompiled ahead of time, so there's no
+        emulator in between: just Mystic Manor in 4K, widescreen and 60 fps.
+      </p>
+      <div class="actions">
+        {
+          dl?.windows && (
+            <a class="btn btn--primary" href={dl.windows.url}>
+              <DownloadIcon /> Download for Windows
+            </a>
+          )
+        }
+        {dl?.linux && <a class="btn btn--ghost" href={dl.linux.url}>Linux AppImage (beta)</a>}
+      </div>
+      {
+        requirements && (
+          <p class="req">
+            Bring your own disc: <strong>{requirements}</strong>. No game data included.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    highlights.length > 0 && (
+      <section class="strip" aria-label="Highlights">
+        <ul class="wrap strip-grid">
+          {highlights.map((h) => (
+            <li>
+              <span class="display">{h.value}</span>
+              <span>{h.label}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    screenshots.length > 0 && (
+      <section class="wrap block gallery">
+        <div class="block-head">
+          <h2 class="display section-title">Mystic Manor, remastered</h2>
+          <p class="lead">
+            Every screen is the real port running on PC. The Creeper's window animation from the Xbox edition is back in
+            the courtyard, too.
+          </p>
+        </div>
+        <div class="shots">
+          {screenshots.map((s) => (
+            <figure>
+              <Image src={s.src} alt={s.caption} widths={[480, 800, 1200]} sizes="(min-width: 900px) 400px, 100vw" />
+              <figcaption>{s.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="wrap block">
+    <h2 class="display section-title">Playing in three steps</h2>
+    <ol class="steps">
+      <li>
+        <span class="display num" aria-hidden="true">1</span>
+        <strong>Download the installer</strong>
+        <span>
+          {dl?.windows?.file ?? 'The installer'} installs for your user, with no admin rights. Prefer one folder? Grab the
+          zip.
+        </span>
+      </li>
+      <li>
+        <span class="display num" aria-hidden="true">2</span>
+        <strong>Point it at your disc</strong>
+        <span>The launcher asks for your own GameCube image the first time. Nothing from the game ships with us.</span>
+      </li>
+      <li>
+        <span class="display num" aria-hidden="true">3</span>
+        <strong>Press Play</strong>
+        <span>Updates arrive through the launcher and keep your saves and settings.</span>
+      </li>
+    </ol>
+    <p class="lead more-line">
+      Linux, the zip, file locations and more: <a href={gameUrl}>full install guide</a>.
+    </p>
+  </section>
+
+  <section class="wrap block games" id="games">
+    <h2 class="display section-title">Our ports</h2>
+    <div class="cards">
+      {games.map((g) => <GameCard game={g} />)}
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Hero */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    min-height: min(760px, 92svh);
+    display: flex;
+    flex-direction: column;
+  }
+  .hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(13, 16, 41, 0.75) 0%,
+      rgba(13, 16, 41, 0.15) 30%,
+      rgba(13, 16, 41, 0.6) 62%,
+      var(--night) 100%
+    );
+  }
+  .hero-copy {
+    position: relative;
+    margin-top: auto;
+    width: 100%;
+    padding-top: 120px;
+    padding-bottom: 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .badge {
+    align-self: flex-start;
+    background: rgba(155, 231, 185, 0.14);
+    color: var(--ghost);
+    border: 1px solid rgba(155, 231, 185, 0.4);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .badge:hover {
+    color: var(--moon);
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    line-height: 0.95;
+    text-shadow:
+      0 4px 0 var(--night),
+      0 10px 40px rgba(0, 0, 0, 0.6);
+  }
+  h1 span {
+    color: var(--lantern);
+  }
+  .intro {
+    margin: 0;
+    max-width: 620px;
+    font-size: 1.25rem;
+    color: var(--moon-soft);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 6px;
+  }
+  .req {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .req strong {
+    color: var(--moon);
+  }
+
+  /* Highlights strip */
+  .strip {
+    border-block: 1px solid var(--line);
+    background: var(--night-band);
+  }
+  .strip-grid {
+    list-style: none;
+    margin-block: 0;
+    margin-inline: auto;
+    padding-block: 28px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 24px;
+  }
+  .strip-grid li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+  .strip-grid .display {
+    font-size: 2.125rem;
+    color: var(--lantern);
+    line-height: 1.1;
+  }
+
+  /* Sections */
+  .block {
+    padding-block: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .gallery {
+    padding-top: 96px;
+  }
+  .games {
+    padding-bottom: 96px;
+  }
+  .block-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .block-head .lead {
+    max-width: 420px;
+  }
+
+  .shots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 20px;
+  }
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  figure :global(img) {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 3px solid var(--line);
+  }
+  figcaption {
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 20px;
+  }
+  .steps li {
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--muted);
+  }
+  .steps strong {
+    color: var(--moon);
+    font-size: 1.25rem;
+  }
+  .num {
+    font-size: 2.75rem;
+    color: var(--lantern);
+  }
+  .more-line a {
+    color: var(--lantern);
+    font-weight: 600;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 24px;
+  }
+</style>

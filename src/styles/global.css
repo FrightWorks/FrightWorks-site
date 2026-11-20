@@ -1,0 +1,220 @@
+/* FrightWorks: "Stormy Night". Dark-only by design, matching the launcher. */
+:root {
+  --night: #0d1029;
+  --night-deep: #090b1f;
+  --night-band: #12163a;
+  --panel: #171b3d;
+  --panel-dim: #11142f;
+  --chip: #232859;
+  --line: #2a2f5c;
+  --line-dashed: #353b72;
+  --moon: #f1ecdd;
+  --moon-soft: #e2ddcf;
+  --muted: #a9a9c8;
+  --faint: #8c8cae;
+  --lantern: #f4a63a;
+  --lantern-shadow: #a8661a;
+  --lantern-ink: #1a1206;
+  --ghost: #9be7b9;
+
+  --font-display: 'Luckiest Guy', 'Figtree Variable', system-ui, sans-serif;
+  --font-body: 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+
+  --wrap: 1240px;
+  --radius: 20px;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--night);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--moon);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: var(--moon);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+a:hover {
+  color: var(--lantern);
+}
+:focus-visible {
+  outline: 3px solid var(--lantern);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+.wrap {
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.section-title {
+  margin: 0;
+  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+}
+
+.lead {
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: var(--chip);
+  color: #c9c9e4;
+}
+.chip--playable {
+  background: rgba(155, 231, 185, 0.14);
+  color: var(--ghost);
+}
+.chip--soon {
+  background: rgba(244, 166, 58, 0.14);
+  color: var(--lantern);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.125rem;
+  padding: 16px 28px;
+  border-radius: 14px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+}
+.btn--primary {
+  background: var(--lantern);
+  color: var(--lantern-ink);
+  box-shadow: 0 6px 0 var(--lantern-shadow);
+}
+.btn--primary:hover {
+  color: var(--lantern-ink);
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 var(--lantern-shadow);
+}
+.btn--ghost {
+  background: rgba(13, 16, 41, 0.6);
+  color: var(--moon);
+  font-weight: 600;
+  border: 2px solid rgba(241, 236, 221, 0.35);
+}
+.btn--ghost:hover {
+  border-color: var(--lantern);
+}
+
+/* Long-form content from Markdown */
+.prose {
+  max-width: 70ch;
+}
+.prose h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  font-size: 2rem;
+  line-height: 1.1;
+  margin: 2.5rem 0 0.75rem;
+}
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 1rem;
+}
+.prose li {
+  margin-bottom: 0.35rem;
+}
+.prose a {
+  color: var(--lantern);
+}
+.prose a:hover {
+  text-decoration: underline;
+}
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--panel);
+  border-radius: 6px;
+  padding: 0.1em 0.4em;
+}
+.prose pre {
+  background: var(--panel) !important;
+  border-radius: 12px;
+  padding: 16px 20px;
+  overflow-x: auto;
+}
+.prose pre code {
+  background: none;
+  padding: 0;
+}
+.prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 0 0 1rem;
+}
+.prose th,
+.prose td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.prose th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
