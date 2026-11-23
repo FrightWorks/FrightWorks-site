@@ -23,10 +23,17 @@ const dl = playable ? await getDownloads(game) : null;
 const banner = hero ?? cover;
 const bannerAlt = hero ? heroAlt : coverAlt;
 const og = banner ? await getImage({ src: banner, width: 1200, format: 'jpg' }) : undefined;
+
+// A game that isn't out yet points visitors at the one they can play today.
+const playNow = playable
+  ? undefined
+  : (await getCollection('games'))
+      .filter((g) => g.data.status === 'playable')
+      .sort((a, b) => a.data.order - b.data.order)[0];
 ---
 
 <Base title={title} description={summary} image={og?.src}>
-  <section class="banner">
+  <section class:list={['banner', { plain: !banner }]}>
     {
       banner && (
         <Image
@@ -119,6 +126,24 @@ const og = banner ? await getImage({ src: banner, width: 1200, format: 'jpg' }) 
   </section>
 
   {
+    playNow && (
+      <section class="wrap meanwhile-wrap">
+        <div class="meanwhile">
+          <div>
+            <h2 class="display">While you wait</h2>
+            <p class="lead">
+              <strong>{playNow.data.title}</strong> is playable now. {playNow.data.summary}
+            </p>
+          </div>
+          <a class="btn btn--primary" href={`/games/${playNow.id}/`}>
+            Get {playNow.data.title}
+          </a>
+        </div>
+      </section>
+    )
+  }
+
+  {
     screenshots.length > 0 && (
       <section class="wrap shots-wrap">
         <h2 class="display section-title">Screenshots</h2>
@@ -165,6 +190,18 @@ const og = banner ? await getImage({ src: banner, width: 1200, format: 'jpg' }) 
     display: flex;
     flex-direction: column;
     gap: 16px;
+  }
+  /* No artwork yet: don't reserve the image's height. */
+  .banner.plain {
+    min-height: 0;
+    background: none;
+  }
+  .banner.plain .banner-shade {
+    display: none;
+  }
+  .banner.plain .banner-copy {
+    padding-top: 64px;
+    padding-bottom: 16px;
   }
   .chips {
     display: flex;
@@ -254,6 +291,34 @@ const og = banner ? await getImage({ src: banner, width: 1200, format: 'jpg' }) 
 
   .body {
     padding-block: 32px 48px;
+  }
+
+  .meanwhile-wrap {
+    padding-bottom: 96px;
+  }
+  .meanwhile {
+    background: var(--panel);
+    border-radius: 24px;
+    padding: clamp(24px, 4vw, 40px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px 40px;
+  }
+  .meanwhile > div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 1 320px;
+    max-width: 640px;
+  }
+  .meanwhile h2 {
+    margin: 0;
+    font-size: 2.25rem;
+  }
+  .meanwhile strong {
+    color: var(--moon);
   }
 
   .shots-wrap {

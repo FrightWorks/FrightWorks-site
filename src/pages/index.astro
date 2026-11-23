@@ -62,7 +62,8 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
       {
         requirements && (
           <p class="req">
-            Bring your own disc: <strong>{requirements}</strong>. No game data included.
+            You need your own disc image: <strong>{requirements}</strong>. No game data is included.{' '}
+            <a href={`${gameUrl}#common-questions`}>Common questions</a>
           </p>
         )
       }
@@ -116,6 +117,10 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
           {dl?.windows?.file ?? 'The installer'} installs for your user, with no admin rights. Prefer one folder? Grab the
           zip.
         </span>
+        <span class="note">
+          Windows may warn that the setup is from an unknown publisher, because it isn't code-signed. Choose{' '}
+          <b>More info</b>, then <b>Run anyway</b>.
+        </span>
       </li>
       <li>
         <span class="display num" aria-hidden="true">2</span>
@@ -129,7 +134,8 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
       </li>
     </ol>
     <p class="lead more-line">
-      Linux, the zip, file locations and more: <a href={gameUrl}>full install guide</a>.
+      Linux, the zip, file locations and more: <a href={gameUrl}>full install guide</a>. Stuck on something?{' '}
+      <a href={`${gameUrl}#common-questions`}>Common questions</a>.
     </p>
   </section>
 
@@ -216,12 +222,24 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
     margin-top: 6px;
   }
   .req {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--muted);
+    margin: 6px 0 0;
+    max-width: 620px;
+    padding-left: 14px;
+    border-left: 3px solid var(--lantern);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--moon-soft);
   }
   .req strong {
     color: var(--moon);
+  }
+  .req a {
+    color: var(--lantern);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .req a:hover {
+    text-decoration: underline;
   }
 
   /* Highlights strip */
@@ -318,6 +336,15 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
   .steps strong {
     color: var(--moon);
     font-size: 1.25rem;
+  }
+  .steps .note {
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line-dashed);
+    font-size: 0.9375rem;
+  }
+  .steps .note b {
+    color: var(--moon);
   }
   .num {
     font-size: 2.75rem;
