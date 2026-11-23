@@ -23,36 +23,40 @@ const href = `/games/${game.id}/`;
     <div class="chips">
       {playable ? <span class="chip chip--playable">Playable</span> : <span class="chip chip--soon">Coming soon</span>}
       {original && <span class="chip">{original}</span>}
+      {release && <span class="chip">{release.tag}</span>}
     </div>
-    <h3 class="display">{title}</h3>
+    <h3 class="display">
+      <!-- The link's ::after covers the card, so the whole card is one click target. -->
+      <a href={href} class="card-link">{title}</a>
+    </h3>
     <p class="lead">{summary}</p>
-    {
-      playable ? (
-        <a href={href} class="more">
-          {release ? `Download ${release.tag}` : 'Download'} <span aria-hidden="true">→</span>
-        </a>
-      ) : (
-        <a href="https://github.com/FrightWorks" class="more more--quiet">
-          Follow the org on GitHub <span aria-hidden="true">→</span>
-        </a>
-      )
-    }
+    <span class="more" aria-hidden="true">
+      {playable ? 'Download and install guide' : 'About this port'} →
+    </span>
   </div>
 </article>
 
 <style>
   .card {
+    position: relative;
     background: var(--panel);
     border-radius: 24px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    transition: background 0.15s ease;
+  }
+  .card:hover {
+    background: var(--chip);
   }
   .card.soon {
     background: var(--panel-dim);
     border: 2px dashed var(--line-dashed);
     justify-content: center;
     min-height: 360px;
+  }
+  .card.soon:hover {
+    background: var(--panel);
   }
   .cover {
     width: 100%;
@@ -77,19 +81,29 @@ const href = `/games/${game.id}/`;
     margin: 0;
     font-size: 2rem;
   }
+  .card-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+  }
+  .card-link:focus-visible {
+    outline: none;
+  }
+  .card-link:focus-visible::after {
+    outline: 3px solid var(--lantern);
+    outline-offset: -3px;
+  }
   .more {
     margin-top: 6px;
     color: var(--lantern);
     font-weight: 700;
   }
-  .more:hover {
-    color: var(--moon);
-  }
-  .more--quiet {
+  .soon .more {
     color: var(--moon);
     font-weight: 600;
   }
-  .more--quiet:hover {
+  .soon:hover .more {
     color: var(--lantern);
   }
 </style>

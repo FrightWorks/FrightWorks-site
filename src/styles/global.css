@@ -210,6 +210,46 @@ h3 {
   font-weight: 600;
 }
 
+/* Question-and-answer lists: <details> blocks written in a game's Markdown */
+.prose details {
+  border-top: 1px solid var(--line);
+}
+.prose details:last-of-type {
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1rem;
+}
+.prose summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  transition: color 0.15s ease;
+}
+.prose summary::-webkit-details-marker {
+  display: none;
+}
+.prose summary::after {
+  content: '+';
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--lantern);
+}
+.prose details[open] > summary::after {
+  content: '\2212';
+}
+.prose summary:hover {
+  color: var(--lantern);
+}
+.prose details > p {
+  color: var(--moon-soft);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
