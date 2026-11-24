@@ -34,7 +34,5 @@ games). Static site built with Astro, deployed to GitHub Pages by `.github/workf
   getting started and keys, and the details moved to that repo's `docs/`: `playing.md` (installing, updates, file
   locations, moving from an earlier version, keys, controllers, Linux, developer tools), `disc.md` (which disc version,
   formats, checksums), `ps2-xbox-extras.md` (cutscenes, textures and sound from the player's own PS2 or Xbox disc) and
-  `building.md`. Take no100f facts from the README plus those pages. `src/content/games/no100f.md` predates the change:
-  its "a later version may optionally read your own PS2 or Xbox disc image" is out of date (the PS2/Xbox extras shipped
-  to `main` in #209-#213, not yet in a release).
+  `building.md`. Take no100f facts from the README plus those pages.
 - Run `npm run build` before committing; it must finish without errors.
