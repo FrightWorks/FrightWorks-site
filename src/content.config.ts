@@ -9,7 +9,8 @@ const games = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string(),
-      status: z.enum(['playable', 'in-development']),
+      // playable: released; in-development: being worked on ("Coming soon"); planned: announced, not started.
+      status: z.enum(['playable', 'in-development', 'planned']),
       // Shown as a chip, e.g. "GameCube · 2002". Omit while unannounced.
       original: z.string().optional(),
       summary: z.string(),
@@ -22,6 +23,8 @@ const games = defineCollection({
       heroAlt: z.string().optional(),
       cover: image().optional(),
       coverAlt: z.string().optional(),
+      // Front of the original GameCube case, shown beside the cover on the game's card.
+      boxart: image().optional(),
       highlights: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
       screenshots: z.array(z.object({ src: image(), caption: z.string() })).default([]),
       // Release assets with stable names, served from /releases/latest/download/<file>.
