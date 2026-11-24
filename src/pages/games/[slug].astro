@@ -18,7 +18,10 @@ interface Props {
 const { game } = Astro.props;
 const { title, status, original, summary, hero, heroAlt, cover, coverAlt, screenshots, requirements } = game.data;
 const playable = status === 'playable';
-const { Content } = await render(game);
+const { Content, headings } = await render(game);
+// "On this page" list beside the text on wide screens; only worth showing for a page with a few sections.
+const toc = headings.filter((h) => h.depth === 2);
+const showToc = toc.length >= 3;
 const dl = playable ? await getDownloads(game) : null;
 const banner = hero ?? cover;
 const bannerAlt = hero ? heroAlt : coverAlt;
@@ -128,11 +131,43 @@ const playNow = playable
     )
   }
 
+  {
+    screenshots.length > 0 && (
+      <section class="wrap shots-wrap">
+        <h2 class="display section-title">Screenshots</h2>
+        <div class="shots">
+          {screenshots.map((s) => (
+            <figure>
+              <Image src={s.src} alt={s.caption} widths={[480, 800, 1200]} sizes="(min-width: 900px) 400px, 100vw" />
+              <figcaption>{s.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )
+  }
   <section class="wrap body">
-    <article class="prose">
-      <Content />
-    </article>
+    <div class:list={['body-grid', { 'has-toc': showToc }]}>
+      <article class="prose">
+        <Content />
+      </article>
+      {
+        showToc && (
+          <nav class="toc" aria-label="On this page">
+            <p>On this page</p>
+            <ul>
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </div>
   </section>
+
 
   {
     playNow && (
@@ -152,22 +187,45 @@ const playNow = playable
     )
   }
 
-  {
-    screenshots.length > 0 && (
-      <section class="wrap shots-wrap">
-        <h2 class="display section-title">Screenshots</h2>
-        <div class="shots">
-          {screenshots.map((s) => (
-            <figure>
-              <Image src={s.src} alt={s.caption} widths={[480, 800, 1200]} sizes="(min-width: 900px) 400px, 100vw" />
-              <figcaption>{s.caption}</figcaption>
-            </figure>
-          ))}
-        </div>
-      </section>
-    )
-  }
 </Base>
+
+<script>
+  // Highlight the "On this page" entry for the section being read: the last heading that has
+  // scrolled past 40% of the window's height, or the last one once the page is scrolled to the end.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
+  const sections = links
+    .map((link) => ({ link, heading: document.getElementById(decodeURIComponent(link.hash.slice(1))) }))
+    .filter((s): s is { link: HTMLAnchorElement; heading: HTMLElement } => s.heading !== null);
+
+  if (sections.length > 0) {
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const line = window.innerHeight * 0.4;
+      const atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      let current = atEnd ? sections[sections.length - 1] : undefined;
+      if (!current) {
+        for (const s of sections) {
+          if (s.heading.getBoundingClientRect().top <= line) current = s;
+          else break;
+        }
+      }
+      for (const s of sections) {
+        if (s === current) s.link.setAttribute('aria-current', 'location');
+        else s.link.removeAttribute('aria-current');
+      }
+    };
+    const queue = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    };
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue);
+    update();
+  }
+</script>
 
 <style>
   .banner {
@@ -310,7 +368,70 @@ const playNow = playable
   }
 
   .body {
-    padding-block: 32px 48px;
+    padding-block: 56px 80px;
+  }
+  .toc {
+    display: none;
+  }
+  /* Wide screens: the text keeps its reading width and the free column on the right holds a list of
+     the page's sections that stays in view while scrolling. */
+  @media (min-width: 1080px) {
+    .body-grid.has-toc {
+      display: grid;
+      grid-template-columns: minmax(0, 70ch) 240px;
+      justify-content: space-between;
+      gap: 64px;
+    }
+    .toc {
+      display: block;
+      position: sticky;
+      top: 32px;
+      align-self: start;
+      margin-top: 2.5rem;
+      padding-left: 20px;
+      border-left: 2px solid var(--line);
+    }
+  }
+  .toc p {
+    margin: 0 0 10px;
+    color: var(--faint);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .toc a {
+    color: var(--muted);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .toc a:hover {
+    color: var(--lantern);
+  }
+  .toc li {
+    position: relative;
+  }
+  /* The current section: amber text and an amber bar over the list's left rule. */
+  .toc a[aria-current] {
+    color: var(--lantern);
+  }
+  .toc a[aria-current]::before {
+    content: '';
+    position: absolute;
+    left: -22px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--lantern);
   }
 
   .meanwhile-wrap {
@@ -342,7 +463,7 @@ const playNow = playable
   }
 
   .shots-wrap {
-    padding-bottom: 96px;
+    padding-top: 56px;
     display: flex;
     flex-direction: column;
     gap: 28px;
