@@ -8,8 +8,8 @@ on:
   # Sent by a game repo's release workflow so the version and download links update.
   repository_dispatch:
     types: [release-published]
-  # Rebuild every 3 hours: picks up new download stats (download-stats publishes them twice a day, at
-  # irregular times because GitHub delays scheduled runs) and is the fallback if a release dispatch is missed.
+  # Rebuild every 3 hours: the fallback for the version label and download links. New download stats are
+  # picked up sooner by stats-check.yml, which starts this workflow when stats.json changes.
   schedule:
     - cron: '17 */3 * * *'
 

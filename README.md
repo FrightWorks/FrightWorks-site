@@ -17,7 +17,10 @@ npm run build    # static site in dist/
    `/games/<slug>/`.
 
 Download links and the version number come from the game repo's latest GitHub release when the site builds. The site
-rebuilds daily, on every push, and when a game repo sends a `release-published` repository dispatch.
+rebuilds every 3 hours, on every push, and when a game repo sends a `release-published` repository dispatch. Every
+30 minutes `stats-check.yml` also checks whether FrightWorks/download-stats has published a new `stats.json` (compared
+with `/stats-generated.txt` from the last build) and starts a rebuild if so; download-stats publishes twice a day and
+within about an hour of a new release.
 
 Scooby-Doo ™ & © Hanna-Barbera / Warner Bros. Unofficial fan project, not affiliated with or endorsed by Warner Bros.,
 THQ or Heavy Iron Studios.
