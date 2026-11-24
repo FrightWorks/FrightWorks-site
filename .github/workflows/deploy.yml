@@ -8,9 +8,10 @@ on:
   # Sent by a game repo's release workflow so the version and download links update.
   repository_dispatch:
     types: [release-published]
-  # Fallback in case a dispatch is missed: rebuild once a day.
+  # Rebuild every 3 hours: picks up new download stats (download-stats publishes them twice a day, at
+  # irregular times because GitHub delays scheduled runs) and is the fallback if a release dispatch is missed.
   schedule:
-    - cron: '17 6 * * *'
+    - cron: '17 */3 * * *'
 
 permissions:
   contents: read

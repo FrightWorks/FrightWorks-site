@@ -20,6 +20,11 @@
   --lantern-shadow: #a8661a;
   --lantern-ink: #1a1206;
   --ghost: #9be7b9;
+  /* Chart marks (bars), checked for colour-blind separation on --panel. Windows and Linux follow the
+     download buttons' amber and green; --series-all is both platforms together. Text never uses them. */
+  --series-win: #cc7f1c;
+  --series-linux: #2fa96f;
+  --series-all: #7b86e8;
 
   --font-display: 'Luckiest Guy', 'Figtree Variable', system-ui, sans-serif;
   --font-body: 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
