@@ -27,6 +27,8 @@ const games = defineCollection({
       boxart: image().optional(),
       highlights: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
       screenshots: z.array(z.object({ src: image(), caption: z.string() })).default([]),
+      // Line under the screenshots heading, e.g. how current a work-in-progress gallery is.
+      screenshotsNote: z.string().optional(),
       // Release assets with stable names, served from /releases/latest/download/<file>.
       downloads: z
         .object({
