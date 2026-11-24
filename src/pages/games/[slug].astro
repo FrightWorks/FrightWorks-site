@@ -18,7 +18,8 @@ interface Props {
 }
 
 const { game } = Astro.props;
-const { title, status, original, summary, hero, heroAlt, cover, coverAlt, boxart, screenshots, requirements } = game.data;
+const { title, status, original, summary, hero, heroAlt, cover, coverAlt, boxart, screenshots, screenshotsNote, requirements } =
+  game.data;
 const playable = status === 'playable';
 const { Content, headings } = await render(game);
 // "On this page" list beside the text on wide screens; only worth showing for a page with a few sections.
@@ -139,9 +140,12 @@ const playNow = playable
   }
 
   {
-    screenshots.length > 0 && (
+    screenshots.length > 0 && playable && (
       <section class="wrap shots-wrap" id="screenshots">
-        <h2 class="display section-title">Screenshots</h2>
+        <div class="shots-head">
+          <h2 class="display section-title">Screenshots</h2>
+          {screenshotsNote && <p class="lead">{screenshotsNote}</p>}
+        </div>
         <ScreenshotGallery shots={screenshots} />
       </section>
     )
@@ -167,6 +171,18 @@ const playNow = playable
       }
     </div>
   </section>
+
+  {
+    screenshots.length > 0 && !playable && (
+      <section class="wrap shots-wrap progress" id="screenshots">
+        <div class="shots-head">
+          <h2 class="display section-title">Progress so far</h2>
+          {screenshotsNote && <p class="lead">{screenshotsNote}</p>}
+        </div>
+        <ScreenshotGallery shots={screenshots} />
+      </section>
+    )
+  }
 
 
   {
@@ -485,6 +501,17 @@ const playNow = playable
     color: var(--moon);
   }
 
+  .shots-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  /* Upcoming game: the gallery follows the description, so it needs no space above, but some
+     before the "While you wait" box. */
+  .shots-wrap.progress {
+    padding-top: 0;
+    padding-bottom: 80px;
+  }
   .shots-wrap {
     padding-top: 56px;
     display: flex;
