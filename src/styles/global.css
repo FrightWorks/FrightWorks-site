@@ -120,6 +120,10 @@ h3 {
   background: rgba(244, 166, 58, 0.14);
   color: var(--lantern);
 }
+.chip--planned {
+  background: rgba(169, 169, 200, 0.14);
+  color: var(--muted);
+}
 
 /* Buttons */
 .btn {

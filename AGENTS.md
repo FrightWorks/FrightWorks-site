@@ -25,6 +25,9 @@ games). Static site built with Astro, deployed to GitHub Pages by `.github/workf
 ## Rules
 
 - No game data, ROM/ISO links or ripped assets on the site. Screenshots of the ports are fine.
+- Original GameCube box art and original title screens are allowed for identifying a game (cards, game pages). Use
+  the least restrictive source available (currently libretro-thumbnails), check each image, and credit the source on
+  `/credits/`. Files live in `src/assets/boxart/` and `src/assets/title-screens/`.
 - Keep the Warner Bros. / THQ / Heavy Iron disclaimer in the footer.
 - Facts about a game (features, requirements, file paths) come from that game's repo README; don't invent them.
 - Run `npm run build` before committing; it must finish without errors.

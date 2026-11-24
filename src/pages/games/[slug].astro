@@ -5,6 +5,7 @@ import Base from '../../layouts/Base.astro';
 import DownloadIcon from '../../components/DownloadIcon.astro';
 import { getDownloads } from '../../lib/downloads';
 import { formatDate, formatSize } from '../../lib/releases';
+import { statusChip } from '../../lib/status';
 
 export async function getStaticPaths() {
   const games = await getCollection('games');
@@ -16,16 +17,18 @@ interface Props {
 }
 
 const { game } = Astro.props;
-const { title, status, original, summary, hero, heroAlt, cover, coverAlt, screenshots, requirements } = game.data;
+const { title, status, original, summary, hero, heroAlt, cover, coverAlt, boxart, screenshots, requirements } = game.data;
 const playable = status === 'playable';
 const { Content, headings } = await render(game);
 // "On this page" list beside the text on wide screens; only worth showing for a page with a few sections.
 const toc = headings.filter((h) => h.depth === 2);
 const showToc = toc.length >= 3;
 const dl = playable ? await getDownloads(game) : null;
-const banner = hero ?? cover;
+// Full-width banner: the hero, else the cover if it's sharp enough to stretch across the page.
+const banner = hero ?? (cover && cover.width >= 1280 ? cover : undefined);
 const bannerAlt = hero ? heroAlt : coverAlt;
-const og = banner ? await getImage({ src: banner, width: 1200, format: 'jpg' }) : undefined;
+const ogSource = banner ?? cover ?? boxart;
+const og = ogSource ? await getImage({ src: ogSource, width: Math.min(1200, ogSource.width), format: 'jpg' }) : undefined;
 
 // A game that isn't out yet points visitors at the one they can play today.
 const playNow = playable
@@ -51,9 +54,12 @@ const playNow = playable
       )
     }
     <div class="banner-shade" aria-hidden="true"></div>
-    <div class="wrap banner-copy">
+    <div class:list={['wrap', 'banner-copy', { 'has-box': !banner && boxart }]}>
+      {!banner && boxart && (
+        <Image src={boxart} alt={`${title} GameCube case`} widths={[240, 480]} sizes="220px" loading="eager" class="page-box" />
+      )}
       <div class="chips">
-        {playable ? <span class="chip chip--playable">Playable</span> : <span class="chip chip--soon">Coming soon</span>}
+        <span class={`chip ${statusChip[status].className}`}>{statusChip[status].label}</span>
         {original && <span class="chip">{original}</span>}
       </div>
       <h1 class="display">{title}</h1>
@@ -269,6 +275,29 @@ const playNow = playable
   .banner.plain .banner-copy {
     padding-top: 64px;
     padding-bottom: 16px;
+  }
+  /* No banner image: show the GameCube case beside the title instead. */
+  .page-box {
+    width: 140px;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  }
+  @media (min-width: 760px) {
+    .banner-copy.has-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 48px;
+      align-items: start;
+    }
+    .banner-copy.has-box > :not(.page-box) {
+      grid-column: 1;
+    }
+    .page-box {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      width: 220px;
+    }
   }
   .chips {
     display: flex;

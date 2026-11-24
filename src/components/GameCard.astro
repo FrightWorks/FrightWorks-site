@@ -2,12 +2,13 @@
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import { getLatestRelease } from '../lib/releases';
+import { statusChip } from '../lib/status';
 
 interface Props {
   game: CollectionEntry<'games'>;
 }
 const { game } = Astro.props;
-const { title, status, original, summary, cover, coverAlt, repo } = game.data;
+const { title, status, original, summary, cover, coverAlt, boxart, repo } = game.data;
 const playable = status === 'playable';
 const release = playable && repo ? await getLatestRelease(repo) : null;
 const href = `/games/${game.id}/`;
@@ -15,13 +16,20 @@ const href = `/games/${game.id}/`;
 
 <article class:list={['card', { soon: !playable }]}>
   {
-    cover && (
-      <Image src={cover} alt={coverAlt ?? ''} widths={[480, 800, 1200]} sizes="(min-width: 800px) 600px, 100vw" class="cover" />
+    (cover || boxart) && (
+      <div class="art">
+        {boxart && (
+          <Image src={boxart} alt={`${title} GameCube case`} widths={[240, 480]} sizes="(min-width: 800px) 200px, 35vw" class="box" />
+        )}
+        {cover && (
+          <Image src={cover} alt={coverAlt ?? ''} widths={[480, 800, 1200]} sizes="(min-width: 800px) 400px, 70vw" class="cover" />
+        )}
+      </div>
     )
   }
   <div class="body">
     <div class="chips">
-      {playable ? <span class="chip chip--playable">Playable</span> : <span class="chip chip--soon">Coming soon</span>}
+      <span class={`chip ${statusChip[status].className}`}>{statusChip[status].label}</span>
       {original && <span class="chip">{original}</span>}
       {release && <span class="chip">{release.tag}</span>}
     </div>
@@ -59,15 +67,36 @@ const href = `/games/${game.id}/`;
   .card.soon {
     background: var(--panel-dim);
     border: 2px dashed var(--line-dashed);
+  }
+  /* A card with no art yet: centre its text in the space the other cards take up. */
+  .card.soon:not(:has(.art)) {
     justify-content: center;
     min-height: 360px;
   }
   .card.soon:hover {
     background: var(--panel);
   }
-  .cover {
-    width: 100%;
+  /* A 2:1 strip: the GameCube case at full height on the left (about 0.7:1), and the title
+     screen filling what's left, which comes out close to 4:3, the shape of the original screens. */
+  .art {
+    display: flex;
     aspect-ratio: 2 / 1;
+    /* Without this the strip grows to the case image's natural height instead of staying 2:1. */
+    min-height: 0;
+    overflow: hidden;
+    background: var(--night-deep);
+  }
+  .box {
+    flex: none;
+    height: 100%;
+    width: auto;
+    box-shadow: 6px 0 18px rgba(0, 0, 0, 0.5);
+    position: relative;
+  }
+  .cover {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
     object-fit: cover;
   }
   .body {
