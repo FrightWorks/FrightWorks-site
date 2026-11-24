@@ -44,10 +44,17 @@ const href = `/games/${game.id}/`;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: background 0.15s ease;
+    transition:
+      background 0.15s ease,
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
+  /* Hover lifts the card slightly. The background stays darker than --chip so the chips inside
+     (platform, version) keep their pill shape. */
   .card:hover {
-    background: var(--chip);
+    background: var(--panel-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
   }
   .card.soon {
     background: var(--panel-dim);
