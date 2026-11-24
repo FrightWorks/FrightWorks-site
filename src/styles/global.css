@@ -201,6 +201,8 @@ h3 {
   background: var(--panel);
   border-radius: 6px;
   padding: 0.1em 0.4em;
+  /* Long strings (checksums, paths) wrap instead of running off a phone screen. */
+  overflow-wrap: anywhere;
 }
 .prose pre {
   background: var(--panel) !important;
