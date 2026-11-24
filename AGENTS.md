@@ -30,4 +30,11 @@ games). Static site built with Astro, deployed to GitHub Pages by `.github/workf
   `/credits/`. Files live in `src/assets/boxart/` and `src/assets/title-screens/`.
 - Keep the Warner Bros. / THQ / Heavy Iron disclaimer in the footer.
 - Facts about a game (features, requirements, file paths) come from that game's repo README; don't invent them.
+- The no100f README was cut down on 2026-11-24 (FrightWorks/FrightWorks-no100f#214): it keeps the intro, features,
+  getting started and keys, and the details moved to that repo's `docs/`: `playing.md` (installing, updates, file
+  locations, moving from an earlier version, keys, controllers, Linux, developer tools), `disc.md` (which disc version,
+  formats, checksums), `ps2-xbox-extras.md` (cutscenes, textures and sound from the player's own PS2 or Xbox disc) and
+  `building.md`. Take no100f facts from the README plus those pages. `src/content/games/no100f.md` predates the change:
+  its "a later version may optionally read your own PS2 or Xbox disc image" is out of date (the PS2/Xbox extras shipped
+  to `main` in #209-#213, not yet in a release).
 - Run `npm run build` before committing; it must finish without errors.
