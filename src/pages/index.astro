@@ -6,12 +6,19 @@ import Header from '../components/Header.astro';
 import GameCard from '../components/GameCard.astro';
 import DownloadIcon from '../components/DownloadIcon.astro';
 import { getDownloads } from '../lib/downloads';
+import { formatSize } from '../lib/releases';
 
 const games = (await getCollection('games')).sort((a, b) => a.data.order - b.data.order);
 const featured = games.find((g) => g.data.status === 'playable');
 if (!featured) throw new Error('The home page needs at least one playable game.');
 
 const dl = await getDownloads(featured);
+// Second line on each download button: "v1.1.3 · Installer · 664 MB". Parts the build couldn't fetch are left out.
+const subline = (...parts: (string | number | undefined)[]) =>
+  parts
+    .filter((p) => p !== undefined)
+    .map((p) => (typeof p === 'number' ? formatSize(p) : p))
+    .join(' · ');
 const { hero, heroAlt, highlights, screenshots, requirements } = featured.data;
 const gameUrl = `/games/${featured.id}/`;
 const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : undefined;
@@ -51,13 +58,55 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
       </p>
       <div class="actions">
         {
-          dl?.windows && (
+          dl?.windows && dl.zip && (
+            <div class="split" role="group" aria-label="Download for Windows">
+              <a class="split-main" href={dl.windows.url}>
+                <DownloadIcon />
+                <span class="btn-text">
+                  <span>
+                    <span class="wide">Download for </span>Windows
+                  </span>
+                  <small>
+                    {dl.release && <span class="wide">{dl.release.tag} · </span>}
+                    {subline('Installer', dl.windows.size)}
+                  </small>
+                </span>
+              </a>
+              <a class="split-alt" href={dl.zip.url} aria-label={subline('Portable zip', dl.zip.size)}>
+                <span class="btn-text">
+                  <span>Zip</span>
+                  <small>
+                    {dl.zip.size ? (
+                      <>
+                        <span class="wide">Portable · </span>
+                        {formatSize(dl.zip.size)}
+                      </>
+                    ) : (
+                      'Portable'
+                    )}
+                  </small>
+                </span>
+              </a>
+            </div>
+          )
+        }
+        {
+          dl?.windows && !dl.zip && (
             <a class="btn btn--primary" href={dl.windows.url}>
               <DownloadIcon /> Download for Windows
             </a>
           )
         }
-        {dl?.linux && <a class="btn btn--ghost" href={dl.linux.url}>Linux AppImage (beta)</a>}
+        {
+          dl?.linux && (
+            <a class="btn btn--ghost" href={dl.linux.url}>
+              <span class="btn-text">
+                <span>Linux AppImage</span>
+                <small>{subline('Beta', dl.linux.size)}</small>
+              </span>
+            </a>
+          )
+        }
       </div>
       {
         requirements && (
@@ -220,6 +269,106 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
     flex-wrap: wrap;
     gap: 14px;
     margin-top: 6px;
+  }
+  .btn-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+  .btn-text small {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    opacity: 0.8;
+  }
+
+  /* Windows split button: installer on the left two-thirds, portable zip on the right third. The halves
+     are cut on a slant; the gap between them shows the container's darker amber as a diagonal divider. */
+  .split {
+    --slant: 18px;
+    --cut: 3px;
+    display: inline-grid;
+    grid-template-columns: 2fr 1fr;
+    border-radius: 14px;
+    background: var(--lantern-shadow);
+    box-shadow: 0 6px 0 var(--lantern-shadow);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .split:has(a:hover) {
+    transform: translateY(2px);
+    box-shadow: 0 4px 0 var(--lantern-shadow);
+  }
+  .split:has(a:focus-visible) {
+    outline: 3px solid var(--moon);
+    outline-offset: 3px;
+  }
+  .split a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding-block: 12px;
+    color: var(--lantern-ink);
+    font-weight: 700;
+    font-size: 1.125rem;
+    transition: background 0.15s ease;
+  }
+  /* The clip-path would cut off a normal focus ring, so the group gets the ring (above) and the
+     focused half is marked by underlining its label. */
+  .split a:focus-visible {
+    outline: none;
+  }
+  .split a:focus-visible .btn-text > span {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .split-main {
+    padding-left: 26px;
+    padding-right: calc(22px + var(--slant));
+    background: var(--lantern);
+    border-radius: 14px 0 0 14px;
+    clip-path: polygon(0 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%);
+  }
+  .split-main:hover {
+    background: var(--lantern-hover);
+  }
+  .split-alt {
+    margin-left: calc(var(--cut) - var(--slant));
+    padding-left: calc(var(--slant) + 14px);
+    padding-right: 22px;
+    background: var(--lantern-deep);
+    border-radius: 0 14px 14px 0;
+    clip-path: polygon(var(--slant) 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .split-alt:hover {
+    background: var(--lantern-deep-hover);
+  }
+  .split :global(svg) {
+    flex: none;
+  }
+  /* Phones: fill the row, shorten the labels (the badge above already shows the version), and let
+     them wrap rather than overflow on the narrowest screens. */
+  @media (max-width: 520px) {
+    .split {
+      --slant: 14px;
+      display: grid;
+      width: 100%;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+    .split a {
+      gap: 8px;
+      font-size: 1rem;
+    }
+    .split-main {
+      padding-left: 16px;
+      padding-right: calc(14px + var(--slant));
+    }
+    .split-alt {
+      padding-left: calc(var(--slant) + 10px);
+      padding-right: 14px;
+    }
+    .split .wide {
+      display: none;
+    }
   }
   .req {
     margin: 6px 0 0;

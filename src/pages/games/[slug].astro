@@ -4,7 +4,7 @@ import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import DownloadIcon from '../../components/DownloadIcon.astro';
 import { getDownloads } from '../../lib/downloads';
-import { formatDate } from '../../lib/releases';
+import { formatDate, formatSize } from '../../lib/releases';
 
 export async function getStaticPaths() {
   const games = await getCollection('games');
@@ -78,7 +78,10 @@ const playNow = playable
             {dl.windows && (
               <li>
                 <div>
-                  <code>{dl.windows.file}</code>
+                  <p class="file">
+                    <code>{dl.windows.file}</code>
+                    {dl.windows.size && <span class="size">{formatSize(dl.windows.size)}</span>}
+                  </p>
                   <span>Windows installer. No admin rights, updates itself.</span>
                 </div>
                 <a class="btn btn--primary" href={dl.windows.url}>
@@ -89,7 +92,10 @@ const playNow = playable
             {dl.zip && (
               <li>
                 <div>
-                  <code>{dl.zip.file}</code>
+                  <p class="file">
+                    <code>{dl.zip.file}</code>
+                    {dl.zip.size && <span class="size">{formatSize(dl.zip.size)}</span>}
+                  </p>
                   <span>Portable zip. Everything in one folder.</span>
                 </div>
                 <a class="btn btn--ghost" href={dl.zip.url}>
@@ -100,7 +106,10 @@ const playNow = playable
             {dl.linux && (
               <li>
                 <div>
-                  <code>{dl.linux.file}</code>
+                  <p class="file">
+                    <code>{dl.linux.file}</code>
+                    {dl.linux.size && <span class="size">{formatSize(dl.linux.size)}</span>}
+                  </p>
                   <span>Linux x86_64, beta. Needs Vulkan and FUSE.</span>
                 </div>
                 <a class="btn btn--ghost" href={dl.linux.url}>
@@ -266,6 +275,17 @@ const playNow = playable
     display: flex;
     flex-direction: column;
     min-width: 0;
+  }
+  .files .file {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 10px;
+  }
+  .files .size {
+    font-weight: 600;
+    white-space: nowrap;
   }
   .files code {
     font-family: var(--font-mono);
