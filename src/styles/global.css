@@ -150,6 +150,18 @@ h3 {
 .btn--ghost:hover {
   border-color: var(--lantern);
 }
+/* Secondary platform download (Linux): ghost-green like the "Playable" chip, so it reads as a real
+   option next to the amber Windows button without competing with it. */
+.btn--alt {
+  background: rgba(155, 231, 185, 0.16);
+  color: var(--ghost);
+  border: 2px solid rgba(155, 231, 185, 0.55);
+}
+.btn--alt:hover {
+  color: var(--moon);
+  background: rgba(155, 231, 185, 0.26);
+  border-color: var(--ghost);
+}
 
 /* Long-form content from Markdown */
 .prose {

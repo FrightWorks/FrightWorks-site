@@ -45,7 +45,7 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
       {
         dl?.release && (
           <a class="badge" href={dl.release.url}>
-            {dl.release.tag} out now · Windows &amp; Linux (beta)
+            {dl.release.tag} out now for Windows{dl.linux && <> · <span class="nowrap">Linux in beta</span></>}
           </a>
         )
       }
@@ -99,7 +99,8 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
         }
         {
           dl?.linux && (
-            <a class="btn btn--ghost" href={dl.linux.url}>
+            <a class="btn btn--alt" href={dl.linux.url}>
+              <DownloadIcon />
               <span class="btn-text">
                 <span>Linux AppImage</span>
                 <small>{subline('Beta', dl.linux.size)}</small>
@@ -246,6 +247,9 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
   }
   .badge:hover {
     color: var(--moon);
+  }
+  .nowrap {
+    white-space: nowrap;
   }
   h1 {
     margin: 0;
