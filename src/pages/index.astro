@@ -5,6 +5,7 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import GameCard from '../components/GameCard.astro';
 import DownloadIcon from '../components/DownloadIcon.astro';
+import ScreenshotGallery from '../components/ScreenshotGallery.astro';
 import { getDownloads } from '../lib/downloads';
 import { formatSize } from '../lib/releases';
 
@@ -145,14 +146,14 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
             the courtyard, too.
           </p>
         </div>
-        <div class="shots">
-          {screenshots.map((s) => (
-            <figure>
-              <Image src={s.src} alt={s.caption} widths={[480, 800, 1200]} sizes="(min-width: 900px) 400px, 100vw" />
-              <figcaption>{s.caption}</figcaption>
-            </figure>
-          ))}
-        </div>
+        <ScreenshotGallery shots={screenshots.slice(0, 3)} />
+        {
+          screenshots.length > 3 && (
+            <p class="lead more-line">
+              <a href={`${gameUrl}#screenshots`}>All {screenshots.length} screenshots →</a>
+            </p>
+          )
+        }
       </section>
     )
   }
@@ -444,29 +445,6 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
   }
   .block-head .lead {
     max-width: 420px;
-  }
-
-  .shots {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-    gap: 20px;
-  }
-  figure {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  figure :global(img) {
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    object-fit: cover;
-    border-radius: 18px;
-    border: 3px solid var(--line);
-  }
-  figcaption {
-    color: var(--muted);
-    font-size: 0.9375rem;
   }
 
   .steps {
