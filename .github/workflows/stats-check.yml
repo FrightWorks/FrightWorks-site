@@ -1,0 +1,47 @@
+name: Check for new download stats
+
+# FrightWorks/download-stats publishes stats.json twice a day, and within about an hour of a new no100f
+# release (its release-watch workflow). This compares the live file's `generated` time with the one the
+# deployed site was built from (/stats-generated.txt) and starts the deploy workflow if they differ.
+# Kept separate from deploy.yml so these frequent runs never take a slot in its `pages` concurrency queue.
+
+on:
+  schedule:
+    - cron: '2,32 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write   # gh workflow run, same repo
+  contents: read
+
+concurrency:
+  group: stats-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start deploy.yml if stats.json changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          STATS_URL: https://frightworks.github.io/download-stats/stats.json
+          MARKER_URL: https://frightworks.dev/stats-generated.txt
+        run: |
+          if ! live=$(curl -fsS "$STATS_URL" | jq -r '.generated // empty'); then
+            echo "::warning::Couldn't read $STATS_URL; leaving it to the 3-hourly rebuild."
+            exit 0
+          fi
+          deployed=$(curl -fsS "$MARKER_URL" | tr -d '[:space:]') || deployed=
+          echo "stats.json: ${live:-none}, deployed site: ${deployed:-none}"
+          if [ -z "$live" ] || [ "$live" = "$deployed" ]; then
+            exit 0
+          fi
+          pending=$(gh run list --workflow deploy.yml --limit 5 --json status --jq '[.[] | select(.status != "completed")] | length')
+          if [ "$pending" -gt 0 ]; then
+            echo "stats.json changed, but a deploy is already queued or running."
+            exit 0
+          fi
+          echo "stats.json changed; starting deploy.yml."
+          gh workflow run deploy.yml --ref "${{ github.event.repository.default_branch }}"
