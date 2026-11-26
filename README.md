@@ -2,7 +2,8 @@
 
 The website for [FrightWorks](https://github.com/FrightWorks): unofficial PC ports of Scooby-Doo! games.
 
-Built with [Astro](https://astro.build) and deployed to GitHub Pages on every push to `main`.
+Built with [Astro](https://astro.build) by GitHub Actions on every push to `main` and served from FrightWorks' own server
+behind Cloudflare, which picks up each new build within a few minutes.
 
 ```sh
 npm install

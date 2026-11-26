@@ -1,7 +1,8 @@
 # FrightWorks site
 
 Source for https://frightworks.dev, the website of the FrightWorks GitHub org (unofficial PC ports of Scooby-Doo!
-games). Static site built with Astro, deployed to GitHub Pages by `.github/workflows/deploy.yml`.
+games). Static site built with Astro by `.github/workflows/deploy.yml` and self-hosted behind Cloudflare: the web server
+pulls the `github-pages` artifact of each successful run on `main` within a few minutes (GitHub Pages is no longer used).
 
 ## Commands
 
