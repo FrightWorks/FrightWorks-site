@@ -3,7 +3,7 @@ name: Check for new download stats
 # FrightWorks/download-stats publishes stats.json twice a day, and within about an hour of a new no100f
 # release (its release-watch workflow). This compares the live file's `generated` time with the one the
 # deployed site was built from (/stats-generated.txt) and starts the deploy workflow if they differ.
-# Kept separate from deploy.yml so these frequent runs never take a slot in its `pages` concurrency queue.
+# Kept separate from deploy.yml so these frequent runs never take a slot in its `build` concurrency queue.
 
 on:
   schedule:

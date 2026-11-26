@@ -1,4 +1,9 @@
-name: Deploy to GitHub Pages
+name: Build site
+
+# The site is self-hosted. This workflow only builds it: withastro/action uploads the build as the
+# `github-pages` artifact, and the web server pulls that artifact from the newest successful run of this file
+# on main within a few minutes. Keep the file name, the artifact name and a successful conclusion; the server
+# matches on all three. The build must contain index.html and 404.html.
 
 on:
   push:
@@ -15,11 +20,9 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: build
   cancel-in-progress: false
 
 jobs:
@@ -33,13 +36,3 @@ jobs:
         env:
           # Read-only use: the build fetches each game's latest release from the GitHub API.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5
