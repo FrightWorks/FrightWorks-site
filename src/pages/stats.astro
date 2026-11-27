@@ -1,288 +1,110 @@
 ---
-// Download stats for Night of 100 Frights, drawn from stats.json published by the download-stats repo
-// (see src/lib/stats.ts). Everything is rendered at build time; the only interactivity is CSS tooltips
-// on the chart bars, and every value in them is also in the tables below.
+// Download stats for Night of 100 Frights. The numbers come from /stats.json, which the FrightWorks web server
+// regenerates every 5 minutes (see src/lib/stats.ts). The build renders them once as the starting point (and for
+// visitors without JavaScript); the script below loads /stats.json when the page opens and every 5 minutes while
+// it stays open, and redraws with src/lib/stats-view.ts, the same code the build uses. The only other
+// interactivity is CSS tooltips on the chart bars, and every value in them is also in the tables.
 import Base from '../layouts/Base.astro';
-import { getStats, PLATFORMS, STATS_REPO_URL, type Part, type Platform } from '../lib/stats';
+import { getStats, renderStats, renderUnavailable } from '../lib/stats';
 
 const stats = await getStats();
-
-const num = (n: number) => n.toLocaleString('en-US');
-const parts = (list: Part[]) => list.map((p) => `${p.label} ${num(p.count)}`).join(' · ');
-const size = (n: number) =>
-  n < 1048576 ? `${num(Math.round(n / 1024))} KB` : `${(n / 1048576).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MB`;
-const day = (iso: string, opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' }) =>
-  new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', { ...opts, timeZone: 'UTC' });
-const updated = stats
-  ? new Date(stats.generated).toLocaleString('en-US', {
-      timeZone: 'America/Chicago',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZoneName: 'short',
-    })
-  : '';
-
-const versions = stats?.versions ?? [];
-const current = versions[0];
-const maxVersion = Math.max(1, ...versions.map((v) => v.downloads));
-const daily = stats?.daily ?? [];
-const maxDaily = Math.max(1, ...daily.map((d) => d.count));
-const seriesVar: Record<Platform, string> = { Windows: 'var(--series-win)', Linux: 'var(--series-linux)' };
-const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
 ---
 
 <Base title="Download stats" description="How often the FrightWorks port of Night of 100 Frights has been downloaded, per version and per day.">
-  <section class="wrap page">
+  <section class="wrap stats-page">
     <h1 class="display">Download stats</h1>
-    {
-      stats && current ? (
-        <>
-          <p class="lead intro">
-            Night of 100 Frights, counted from its GitHub releases twice a day. Last updated {updated}.{' '}
-            All versions together: <strong>{num(stats.allVersions.total)}</strong> downloads (
-            {PLATFORMS.map((p) => `${p} ${num(stats.allVersions.platforms[p])}`).join(' · ')}).
-          </p>
-          <p class="links">
-            <a href={stats.releasesUrl}>Releases on GitHub</a>
-            <a href={STATS_REPO_URL}>How these are collected</a>
-          </p>
+    <div data-stats-live data-generated={stats?.generated ?? ''} set:html={stats ? renderStats(stats) : renderUnavailable()} />
 
-          <div class="tiles">
-            <div class="tile">
-              <span class="k">Latest version</span>
-              <span class="v">{current.tag}</span>
-              <span class="d">released {day(current.date)}</span>
-            </div>
-            {PLATFORMS.map((p) => {
-              const st = current.platforms[p];
-              const recent = stats.recent[p];
-              return (
-                <div class="tile">
-                  <span class="k">
-                    <i class="key" style={`background:${seriesVar[p]}`} />
-                    {p} downloads
-                  </span>
-                  <span class="v">{num(st.downloads)}</span>
-                  <span class="d">{parts(st.parts) || 'no downloads yet'}</span>
-                  {recent && (
-                    <span class="d up">
-                      +{num(recent.count)} {recent.label}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-            <div class="tile">
-              <span class="k">Update files</span>
-              <span class="v">{num(PLATFORMS.reduce((n, p) => n + current.platforms[p].updates, 0))}</span>
-              <span class="d">{PLATFORMS.map((p) => `${p} ${num(current.platforms[p].updates)}`).join(' · ')}</span>
-            </div>
-          </div>
-
-          <section class="card" aria-labelledby="per-version">
-            <h2 id="per-version" class="display">Downloads per version</h2>
-            <p class="note">
-              The last {versions.length} versions, newest first. Installer and zip are combined for Windows. Counts keep
-              growing after a release, so older versions aren't final.
-            </p>
-            <div class="legend">
-              {PLATFORMS.map((p) => (
-                <span>
-                  <i class="key" style={`background:${seriesVar[p]}`} />
-                  {p}
-                </span>
-              ))}
-            </div>
-            <div class="hbars">
-              {versions.map((v) => (
-                <div class="hrow">
-                  <span class="tag">{v.tag}</span>
-                  <div class="hbar">
-                    {PLATFORMS.filter((p) => v.platforms[p].downloads > 0).map((p) => (
-                      <i
-                        tabindex="0"
-                        style={`width:${pct(v.platforms[p].downloads, maxVersion)};background:${seriesVar[p]}`}
-                        data-tip={`${v.tag} ${p}: ${num(v.platforms[p].downloads)}`}
-                        aria-label={`${v.tag} ${p}: ${num(v.platforms[p].downloads)} downloads`}
-                      />
-                    ))}
-                  </div>
-                  <span class="n">{num(v.downloads)}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section class="card" aria-labelledby="per-day">
-            <h2 id="per-day" class="display">New downloads per day</h2>
-            {daily.length > 0 ? (
-              <>
-                <p class="note">
-                  Installer, zip and AppImage of {current.tag}, both platforms together, from {day(daily[0].date)} to{' '}
-                  {day(daily[daily.length - 1].date)} (Central time).
-                </p>
-                <div class="cols" style={`--n:${daily.length}`}>
-                  {daily.map((d) => (
-                    <div class="col">
-                      <div class="track">
-                        <span class="val">{num(d.count)}</span>
-                        <i
-                          tabindex="0"
-                          style={`height:${((d.count / maxDaily) * 140).toFixed(1)}px`}
-                          data-tip={`${day(d.date, { month: 'short', day: 'numeric' })}: ${num(d.count)} new`}
-                          aria-label={`${day(d.date, { month: 'short', day: 'numeric' })}: ${num(d.count)} new downloads`}
-                        />
-                      </div>
-                      <span class="date">{day(d.date, { day: 'numeric' })}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p class="note">The chart appears once the snapshots span at least two days.</p>
-            )}
-          </section>
-
-          <section class="card" aria-labelledby="details">
-            <h2 id="details" class="display">Details per version</h2>
-            <p class="note">Open a version to see its numbers and files.</p>
-            {versions.map((v, i) => (
-              <details open={i === 0}>
-                <summary>
-                  <span>
-                    {v.tag}
-                    {v.prerelease && ' (pre-release)'}
-                  </span>
-                  <small>
-                    {day(v.date)} · {num(v.downloads)} downloads
-                  </small>
-                </summary>
-                <div class="tbl">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Platform</th>
-                        <th class="n">Downloads</th>
-                        <th class="n">Update files</th>
-                        <th class="n">Update checks</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {PLATFORMS.map((p) => {
-                        const st = v.platforms[p];
-                        return (
-                          <tr>
-                            <td>{p}</td>
-                            <td class="n">
-                              {num(st.downloads)}
-                              <small>{parts(st.parts)}</small>
-                            </td>
-                            <td class="n">
-                              {num(st.updates)}
-                              <small>{parts(st.updateParts)}</small>
-                            </td>
-                            <td class="n">{num(st.checks)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                <div class="tbl">
-                  <table class="files">
-                    <thead>
-                      <tr>
-                        <th>File</th>
-                        <th>What it is</th>
-                        <th class="n">Size</th>
-                        <th class="n">Downloads</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {v.files.map((f) => (
-                        <tr>
-                          <td class="fn">{f.name}</td>
-                          <td class="desc">{f.description}</td>
-                          <td class="n">{size(f.size)}</td>
-                          <td class="n">{num(f.downloads)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </details>
-            ))}
-          </section>
-
-          <section class="card meaning" aria-labelledby="meaning">
-            <h2 id="meaning" class="display">What these numbers mean</h2>
-            <p>
-              <strong>Downloads</strong> are requests for the game: the Windows installer plus the Windows zip, or the
-              Linux AppImage. GitHub counts requests, not people, so retries, scanners and someone grabbing both the
-              installer and the zip all add up. Treat it as an upper bound on new players.
-            </p>
-            <p>
-              <strong>Update files</strong> are the in-app updater fetching a version's update packages (full or delta).
-              One update can fetch more than one file, so this isn't the number of people who updated.
-            </p>
-            <p>
-              <strong>Update checks</strong> are installed copies looking for an update (the busiest feed file), a rough
-              sign of installs in use, not unique users. The same installs can show up under several versions, so don't
-              add update checks across versions.
-            </p>
-          </section>
-        </>
-      ) : (
-        <p class="lead intro">
-          The stats couldn't be loaded when this page was built. They're collected in the{' '}
-          <a href={STATS_REPO_URL}>download-stats repo</a>, which also has them as a table.
-        </p>
-      )
-    }
+    <section class="card meaning" aria-labelledby="meaning">
+      <h2 id="meaning" class="display">What these numbers mean</h2>
+      <p>
+        <strong>Downloads</strong> are requests for the game: the Windows installer plus the Windows zip, or the
+        Linux AppImage plus the Linux tarball. GitHub counts requests, not people, so retries, scanners and someone
+        grabbing both the installer and the zip all add up. Treat it as an upper bound on new players.
+      </p>
+      <p>
+        <strong>Update files</strong> are the in-app updater fetching a version's update packages (full or delta).
+        One update can fetch more than one file, so this isn't the number of people who updated.
+      </p>
+      <p>
+        <strong>Update checks</strong> are installed copies looking for an update (the busiest feed file), a rough
+        sign of installs in use, not unique users. The same installs can show up under several versions, so don't
+        add update checks across versions.
+      </p>
+    </section>
   </section>
 </Base>
 
-<style>
-  .page {
+<script>
+  import { renderStats, usable } from '../lib/stats-view';
+
+  const root = document.querySelector<HTMLElement>('[data-stats-live]');
+  const REFRESH_MS = 5 * 60 * 1000;
+
+  async function refresh() {
+    if (!root || document.hidden) return;
+    try {
+      const res = await fetch('/stats.json', { cache: 'no-cache' });
+      if (!res.ok) return;
+      const data: unknown = await res.json();
+      if (!usable(data) || data.generated === root.dataset.generated) return;
+      // Keep the versions the reader opened, and the keyboard focus out of the way of the redraw.
+      const open = root.dataset.generated
+        ? new Set([...root.querySelectorAll<HTMLDetailsElement>('details[open]')].map((d) => d.dataset.tag ?? ''))
+        : undefined;
+      if (root.contains(document.activeElement)) return;
+      root.innerHTML = renderStats(data, open);
+      root.dataset.generated = data.generated;
+    } catch {
+      // Offline or a bad answer: keep what's on the page.
+    }
+  }
+
+  refresh();
+  setInterval(refresh, REFRESH_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refresh();
+  });
+</script>
+
+<style is:global>
+  .stats-page {
     padding-block: 56px 96px;
   }
-  h1 {
+  .stats-page h1 {
     margin: 0 0 16px;
     font-size: clamp(2.75rem, 6vw, 4.5rem);
     color: var(--lantern);
   }
-  .intro {
+  .stats-page .intro {
     max-width: 70ch;
   }
-  .intro strong {
+  .stats-page .intro strong {
     color: var(--moon);
   }
-  .intro a,
-  .links a {
+  .stats-page .intro a,
+  .stats-page .links a {
     color: var(--lantern);
   }
-  .links {
+  .stats-page .links {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 24px;
     margin: 12px 0 32px;
     font-weight: 600;
   }
-  .links a:hover {
+  .stats-page .links a:hover {
     text-decoration: underline;
   }
 
   /* Stat tiles */
-  .tiles {
+  .stats-page .tiles {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
     gap: 16px;
     margin-bottom: 24px;
   }
-  .tile {
+  .stats-page .tile {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -290,7 +112,7 @@ const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
     background: var(--panel);
     border-radius: var(--radius);
   }
-  .tile .k {
+  .stats-page .tile .k {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -298,46 +120,46 @@ const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
     font-size: 0.9375rem;
     font-weight: 600;
   }
-  .tile .v {
+  .stats-page .tile .v {
     font-size: 2.25rem;
     font-weight: 700;
     line-height: 1.2;
     font-variant-numeric: tabular-nums;
   }
-  .tile .d {
+  .stats-page .tile .d {
     color: var(--faint);
     font-size: 0.875rem;
   }
-  .tile .up {
+  .stats-page .tile .up {
     color: var(--ghost);
     font-weight: 600;
   }
 
   /* Cards */
-  .card {
+  .stats-page .card {
     background: var(--panel);
     border-radius: var(--radius);
     padding: 28px clamp(20px, 3vw, 32px);
     margin-bottom: 24px;
   }
-  .card h2 {
+  .stats-page .card h2 {
     margin: 0 0 6px;
     font-size: clamp(1.625rem, 3vw, 2rem);
   }
-  .note {
+  .stats-page .note {
     margin: 0 0 18px;
     color: var(--muted);
     font-size: 0.9375rem;
     max-width: 75ch;
   }
-  .key {
+  .stats-page .key {
     display: inline-block;
     flex: none;
     width: 12px;
     height: 12px;
     border-radius: 3px;
   }
-  .legend {
+  .stats-page .legend {
     display: flex;
     flex-wrap: wrap;
     gap: 6px 20px;
@@ -345,31 +167,31 @@ const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
     color: var(--moon-soft);
     font-size: 0.9375rem;
   }
-  .legend span {
+  .stats-page .legend span {
     display: inline-flex;
     align-items: center;
     gap: 8px;
   }
 
   /* Tooltips on chart bars: hover or keyboard focus. The same numbers are in the tables. */
-  .hbar i,
-  .track i {
+  .stats-page .hbar i,
+  .stats-page .track i {
     position: relative;
     display: block;
     font-style: normal;
     outline-offset: 2px;
     transition: filter 0.12s ease;
   }
-  .hbar i:hover,
-  .hbar i:focus-visible,
-  .track i:hover,
-  .track i:focus-visible {
+  .stats-page .hbar i:hover,
+  .stats-page .hbar i:focus-visible,
+  .stats-page .track i:hover,
+  .stats-page .track i:focus-visible {
     filter: brightness(1.18);
   }
-  .hbar i:hover::after,
-  .hbar i:focus-visible::after,
-  .track i:hover::after,
-  .track i:focus-visible::after {
+  .stats-page .hbar i:hover::after,
+  .stats-page .hbar i:focus-visible::after,
+  .stats-page .track i:hover::after,
+  .stats-page .track i:focus-visible::after {
     content: attr(data-tip);
     position: absolute;
     bottom: calc(100% + 8px);
@@ -386,60 +208,60 @@ const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
   }
 
   /* Downloads per version: horizontal stacked bars */
-  .hbars {
+  .stats-page .hbars {
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
-  .hrow {
+  .stats-page .hrow {
     display: grid;
     grid-template-columns: 5rem 1fr 4rem;
     gap: 12px;
     align-items: center;
     font-size: 0.9375rem;
   }
-  .tag {
+  .stats-page .tag {
     font-weight: 600;
   }
-  .hbar {
+  .stats-page .hbar {
     display: flex;
     gap: 2px;
     height: 20px;
   }
-  .hbar i {
+  .stats-page .hbar i {
     height: 100%;
     min-width: 3px;
   }
-  .hbar i:last-child {
+  .stats-page .hbar i:last-child {
     border-radius: 0 4px 4px 0;
   }
-  .n {
+  .stats-page .n {
     text-align: right;
     font-variant-numeric: tabular-nums;
   }
 
   /* New downloads per day: columns */
-  .cols {
+  .stats-page .cols {
     display: grid;
     grid-template-columns: repeat(var(--n), minmax(0, 1fr));
     gap: 4px;
     border-bottom: 1px solid var(--line);
     padding-top: 8px;
   }
-  .col {
+  .stats-page .col {
     display: flex;
     flex-direction: column;
     align-items: center;
     min-width: 0;
   }
-  .val {
+  .stats-page .val {
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--moon-soft);
     font-variant-numeric: tabular-nums;
   }
   /* Value on the cap of each column; the tallest column is 140px, leaving room for its label. */
-  .track {
+  .stats-page .track {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -448,17 +270,17 @@ const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
     width: 100%;
     height: 170px;
   }
-  .track i {
+  .stats-page .track i {
     width: min(100%, 24px);
     min-height: 2px;
     border-radius: 4px 4px 0 0;
     background: var(--series-all);
   }
-  .track i::after {
+  .stats-page .track i::after {
     left: 50%;
     transform: translateX(-50%);
   }
-  .date {
+  .stats-page .date {
     position: relative;
     top: 8px;
     margin-bottom: 8px;
@@ -468,13 +290,13 @@ const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
   }
 
   /* Details per version */
-  details {
+  .stats-page details {
     border-top: 1px solid var(--line);
   }
-  details:last-of-type {
+  .stats-page details:last-of-type {
     border-bottom: 1px solid var(--line);
   }
-  summary {
+  .stats-page summary {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -485,10 +307,10 @@ const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
     list-style: none;
     transition: color 0.15s ease;
   }
-  summary::-webkit-details-marker {
+  .stats-page summary::-webkit-details-marker {
     display: none;
   }
-  summary::after {
+  .stats-page summary::after {
     content: '+';
     margin-left: auto;
     font-family: var(--font-mono);
@@ -496,83 +318,83 @@ const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(2)}%`;
     line-height: 1;
     color: var(--lantern);
   }
-  details[open] > summary::after {
+  .stats-page details[open] > summary::after {
     content: '\2212';
   }
-  summary:hover {
+  .stats-page summary:hover {
     color: var(--lantern);
   }
-  summary small {
+  .stats-page summary small {
     font-weight: 400;
     color: var(--muted);
     font-size: 0.9375rem;
   }
-  .tbl {
+  .stats-page .tbl {
     overflow-x: auto;
     margin-bottom: 16px;
   }
-  table {
+  .stats-page table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9375rem;
   }
-  th,
-  td {
+  .stats-page th,
+  .stats-page td {
     text-align: left;
     padding: 10px 12px;
     border-bottom: 1px solid var(--line);
     vertical-align: top;
   }
-  th {
+  .stats-page th {
     color: var(--muted);
     font-weight: 600;
     font-size: 0.875rem;
   }
-  th.n,
-  td.n {
+  .stats-page th.n,
+  .stats-page td.n {
     text-align: right;
     white-space: nowrap;
   }
-  td small {
+  .stats-page td small {
     display: block;
     color: var(--faint);
     font-size: 0.8125rem;
   }
-  .fn {
+  .stats-page .fn {
     min-width: 10rem;
     overflow-wrap: anywhere;
     font-family: var(--font-mono);
     font-size: 0.875rem;
   }
-  .desc {
+  .stats-page .desc {
     min-width: 14rem;
     color: var(--moon-soft);
   }
 
-  .meaning p {
+  .stats-page .meaning p {
     margin: 0 0 12px;
     color: var(--moon-soft);
     max-width: 75ch;
   }
-  .meaning p:last-child {
+  .stats-page .meaning p:last-child {
     margin-bottom: 0;
   }
 
   @media (max-width: 520px) {
-    .tile {
+    .stats-page .tile {
       padding: 16px 18px;
     }
-    .tile .v {
+    .stats-page .tile .v {
       font-size: 1.875rem;
     }
-    .hrow {
+    .stats-page .hrow {
       grid-template-columns: 3.75rem 1fr 3rem;
       gap: 8px;
     }
-    .val {
+    .stats-page .val {
       font-size: 0.6875rem;
     }
-    .date {
+    .stats-page .date {
       font-size: 0.6875rem;
     }
   }
