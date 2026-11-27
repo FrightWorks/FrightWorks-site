@@ -137,6 +137,13 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
             </a>
           )
         }
+        {
+          dl?.recompLauncher && (
+            <a class="rl" href={dl.recompLauncher}>
+              <img src="/badges/recomplauncher-dark.svg" alt="Get it on RecompLauncher" width="313" height="56" />
+            </a>
+          )
+        }
       </div>
       {
         requirements && (
@@ -432,6 +439,25 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
     .split .wide {
       display: none;
     }
+  }
+  /* RecompLauncher's own badge, self-hosted (the CSP only allows our own images). Kept at its native 56px,
+     a little shorter than the buttons, so all three fit on one row on a laptop screen. */
+  .rl {
+    display: block;
+    align-self: center;
+    border-radius: 12px;
+  }
+  .rl img {
+    display: block;
+    height: 56px;
+    width: auto;
+  }
+  .rl:hover img {
+    filter: brightness(1.15);
+  }
+  .rl:focus-visible {
+    outline: 3px solid var(--moon);
+    outline-offset: 3px;
   }
   .req {
     margin: 6px 0 0;
