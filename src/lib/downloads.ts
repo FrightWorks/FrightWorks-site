@@ -16,6 +16,8 @@ export interface GameDownloads {
   zip?: DownloadFile;
   /** Portable Linux build (.tar.gz). */
   tarball?: DownloadFile;
+  /** The game's page on RecompLauncher. */
+  recompLauncher?: string;
 }
 
 export async function getDownloads(game: CollectionEntry<'games'>): Promise<GameDownloads | null> {
@@ -43,5 +45,6 @@ export async function getDownloads(game: CollectionEntry<'games'>): Promise<Game
   };
   result.zip = versioned(downloads?.zipPattern);
   result.tarball = versioned(downloads?.tarballPattern);
+  result.recompLauncher = downloads?.recompLauncher;
   return result;
 }

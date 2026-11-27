@@ -143,6 +143,19 @@ const playNow = playable
                 </a>
               </li>
             )}
+            {dl.recompLauncher && (
+              <li>
+                <div>
+                  <p class="file">
+                    <strong>RecompLauncher</strong>
+                  </p>
+                  <span>Installs and updates the portable build, checks your disc image and starts the game for you.</span>
+                </div>
+                <a class="rl" href={dl.recompLauncher}>
+                  <img src="/badges/recomplauncher-dark.svg" alt="Get it on RecompLauncher" width="313" height="56" />
+                </a>
+              </li>
+            )}
           </ul>
           {requirements && (
             <p class="req">
@@ -410,6 +423,21 @@ const playNow = playable
   .files span {
     color: var(--muted);
     font-size: 0.9375rem;
+  }
+  .files .rl {
+    display: flex;
+    border-radius: 12px;
+  }
+  .files .rl img {
+    height: 48px;
+    width: auto;
+  }
+  .files .rl:hover img {
+    filter: brightness(1.15);
+  }
+  .files .rl:focus-visible {
+    outline: 3px solid var(--moon);
+    outline-offset: 3px;
   }
   .files .btn {
     font-size: 1rem;

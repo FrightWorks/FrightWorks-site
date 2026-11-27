@@ -37,6 +37,8 @@ const games = defineCollection({
           // Patterns for the versioned portable builds, matched against the latest release's assets.
           zipPattern: z.string().optional(),
           tarballPattern: z.string().optional(),
+          // The game's page on RecompLauncher, if it's listed there.
+          recompLauncher: z.string().url().optional(),
         })
         .optional(),
       requirements: z.string().optional(),
