@@ -14,8 +14,8 @@ on:
   # For a game repo that sends a repository_dispatch instead.
   repository_dispatch:
     types: [release-published]
-  # Rebuild every 3 hours: the fallback for the version label and download links. New download stats are
-  # picked up sooner by stats-check.yml, which starts this workflow when stats.json changes.
+  # Rebuild every 3 hours: the fallback for the version label and download links. Download stats don't need a
+  # rebuild: the stats page loads /stats.json (regenerated on the web server every 5 minutes) in the browser.
   schedule:
     - cron: '17 */3 * * *'
 
