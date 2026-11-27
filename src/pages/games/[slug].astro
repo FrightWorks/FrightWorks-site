@@ -128,6 +128,20 @@ const playNow = playable
                 </a>
               </li>
             )}
+            {dl.tarball && (
+              <li>
+                <div>
+                  <p class="file">
+                    <code>{dl.tarball.file}</code>
+                    {dl.tarball.size && <span class="size">{formatSize(dl.tarball.size)}</span>}
+                  </p>
+                  <span>Portable Linux build. Everything in one folder, no FUSE needed.</span>
+                </div>
+                <a class="btn btn--ghost" href={dl.tarball.url}>
+                  Tarball
+                </a>
+              </li>
+            )}
           </ul>
           {requirements && (
             <p class="req">

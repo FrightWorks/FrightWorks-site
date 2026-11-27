@@ -14,6 +14,8 @@ export interface GameDownloads {
   windows?: DownloadFile;
   linux?: DownloadFile;
   zip?: DownloadFile;
+  /** Portable Linux build (.tar.gz). */
+  tarball?: DownloadFile;
 }
 
 export async function getDownloads(game: CollectionEntry<'games'>): Promise<GameDownloads | null> {
@@ -32,10 +34,14 @@ export async function getDownloads(game: CollectionEntry<'games'>): Promise<Game
     const file = downloads.linuxAppImage;
     result.linux = { file, url: latestDownloadUrl(repo, file), size: sizeOf(file) };
   }
-  if (downloads?.zipPattern && release) {
-    const re = new RegExp(downloads.zipPattern);
+  // Versioned names: only known when the GitHub API answered, so these buttons need a rebuild per release.
+  const versioned = (pattern?: string): DownloadFile | undefined => {
+    if (!pattern || !release) return undefined;
+    const re = new RegExp(pattern);
     const asset = release.assets.find((a) => re.test(a.name));
-    if (asset) result.zip = { file: asset.name, url: asset.url, size: asset.size };
-  }
+    return asset ? { file: asset.name, url: asset.url, size: asset.size } : undefined;
+  };
+  result.zip = versioned(downloads?.zipPattern);
+  result.tarball = versioned(downloads?.tarballPattern);
   return result;
 }

@@ -8,9 +8,10 @@ name: Build site
 on:
   push:
     branches: [main]
-  # Run by hand from the Actions tab.
+  # Run by hand from the Actions tab, and by FrightWorks-no100f's release-dispatch.yml when a release is
+  # published, so the version and download links update within minutes.
   workflow_dispatch:
-  # Sent by a game repo's release workflow so the version and download links update.
+  # For a game repo that sends a repository_dispatch instead.
   repository_dispatch:
     types: [release-published]
   # Rebuild every 3 hours: the fallback for the version label and download links. New download stats are
