@@ -5,6 +5,7 @@ import Base from '../../layouts/Base.astro';
 import DownloadIcon from '../../components/DownloadIcon.astro';
 import ScreenshotGallery from '../../components/ScreenshotGallery.astro';
 import { getDownloads } from '../../lib/downloads';
+import { DISCORD_URL } from '../../lib/links';
 import { formatDate, formatSize } from '../../lib/releases';
 import { statusChip } from '../../lib/status';
 
@@ -207,6 +208,9 @@ const playNow = playable
             <h2 class="display">While you wait</h2>
             <p class="lead">
               <strong>{playNow.data.title}</strong> is playable now. {playNow.data.summary}
+            </p>
+            <p class="lead">
+              For news about {title}, join the <a href={DISCORD_URL}>FrightWorks Discord</a>.
             </p>
           </div>
           <a class="btn btn--primary" href={`/games/${playNow.id}/`}>

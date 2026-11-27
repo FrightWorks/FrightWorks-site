@@ -1,4 +1,6 @@
 ---
+import { DISCORD_URL } from '../lib/links';
+
 interface Props {
   overlay?: boolean;
 }
@@ -13,6 +15,7 @@ const { overlay = false } = Astro.props;
       <a href="/games/no100f/#download">Download</a>
       <a href="/credits/">Credits</a>
       <a href="https://github.com/FrightWorks">GitHub</a>
+      <a href={DISCORD_URL}>Discord</a>
     </nav>
   </div>
 </header>
