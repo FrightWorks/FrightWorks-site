@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+import { DISCORD_URL } from '../../lib/links';
+---
+
+<Base title="Bot privacy policy" description="What the FrightWorks Discord bot sees, keeps and doesn't do.">
+  <section class="wrap page">
+    <h1 class="display">Bot privacy policy</h1>
+    <p class="updated">Last updated November 26, 2026</p>
+    <div class="prose">
+      <p>
+        The FrightWorks bot is a helper in the <a href={DISCORD_URL}>FrightWorks Discord server</a>. It's run by the
+        FrightWorks developers as part of an unofficial fan project.
+      </p>
+
+      <h2>What the bot sees</h2>
+      <ul>
+        <li>The commands you use and what you type into them.</li>
+        <li>Files you attach to a command, such as <code>console.log</code> with <code>/log</code>.</li>
+        <li>
+          Basic Discord information that comes with any command: your user ID, username and the channel or post you used
+          it in.
+        </li>
+        <li>
+          Activity in the server's forums (when posts are created, tagged or replied to), so it can close solved posts and
+          remind people about quiet ones. It doesn't read the text of other messages.
+        </li>
+      </ul>
+
+      <h2>What it does with it</h2>
+      <ul>
+        <li>
+          Logs you send with <code>/log</code> are read in memory to find your version, system and known problems, then
+          discarded. They aren't saved. A <code>console.log</code> can include your Windows username in file paths and
+          details about your PC: the bot's reply only shows you unless you choose to post it, and user folder names are
+          hidden in anything posted publicly.
+        </li>
+        <li>
+          When a moderator uses <strong>Send to GitHub</strong> on a bug report, the post's text, its tags and a link back
+          to it are copied into a public issue on the FrightWorks GitHub. Your Discord display name may appear in that
+          issue. Ask a moderator if you want it removed.
+        </li>
+        <li>
+          The bot keeps a small record linking forum posts to GitHub issues (post ID and issue number) so it can update the
+          post when the issue is fixed.
+        </li>
+      </ul>
+
+      <h2>What it doesn't do</h2>
+      <ul>
+        <li>It doesn't sell or share your information, show ads, or track you outside the FrightWorks server.</li>
+        <li>It doesn't accept or store game files or disc images.</li>
+      </ul>
+
+      <h2>Questions and removal requests</h2>
+      <p>
+        Ask a Moderator in the <a href={DISCORD_URL}>FrightWorks Discord</a>, or open an issue in the <a href="https://github.com/FrightWorks/FrightWorks-no100f/issues">issue tracker</a>.
+      </p>
+      <p>
+        This policy may change as the bot does. Changes are posted on this page. See also the <a href="/bot/terms/">bot terms of service</a>.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page {
+    padding-block: 56px 96px;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    color: var(--lantern);
+  }
+  .updated {
+    margin: 0 0 24px;
+    color: var(--faint);
+  }
+</style>
