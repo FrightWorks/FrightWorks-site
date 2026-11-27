@@ -99,7 +99,35 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
           )
         }
         {
-          dl?.linux && (
+          dl?.linux && dl.tarball && (
+            <div class="split split--linux" role="group" aria-label="Download for Linux">
+              <a class="split-main" href={dl.linux.url}>
+                <DownloadIcon />
+                <span class="btn-text">
+                  <span>Linux AppImage</span>
+                  <small>{subline('Beta', dl.linux.size)}</small>
+                </span>
+              </a>
+              <a class="split-alt" href={dl.tarball.url} aria-label={subline('Portable tarball', dl.tarball.size)}>
+                <span class="btn-text">
+                  <span>Tarball</span>
+                  <small>
+                    {dl.tarball.size ? (
+                      <>
+                        <span class="wide">Portable · </span>
+                        {formatSize(dl.tarball.size)}
+                      </>
+                    ) : (
+                      'Portable'
+                    )}
+                  </small>
+                </span>
+              </a>
+            </div>
+          )
+        }
+        {
+          dl?.linux && !dl.tarball && (
             <a class="btn btn--alt" href={dl.linux.url}>
               <DownloadIcon />
               <span class="btn-text">
@@ -349,6 +377,36 @@ const og = hero ? await getImage({ src: hero, width: 1200, format: 'jpg' }) : un
   }
   .split :global(svg) {
     flex: none;
+  }
+  /* Linux: the same split in the ghost-green outline style of .btn--alt. Solid colours (the translucent
+     .btn--alt fills over --night), so the container's lighter green shows only in the gap and the 2px rim. */
+  .split--linux {
+    padding: 2px;
+    background: #5b8678;
+    box-shadow: none;
+  }
+  .split--linux:has(a:hover) {
+    box-shadow: none;
+  }
+  .split--linux a {
+    color: var(--ghost);
+  }
+  .split--linux a:hover {
+    color: var(--moon);
+  }
+  .split--linux .split-main {
+    background: #243240;
+    border-radius: 12px 0 0 12px;
+  }
+  .split--linux .split-main:hover {
+    background: #32484e;
+  }
+  .split--linux .split-alt {
+    background: #1b2537;
+    border-radius: 0 12px 12px 0;
+  }
+  .split--linux .split-alt:hover {
+    background: #293b46;
   }
   /* Phones: fill the row, shorten the labels (the badge above already shows the version), and let
      them wrap rather than overflow on the narrowest screens. */

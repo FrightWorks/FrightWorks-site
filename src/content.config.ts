@@ -34,8 +34,9 @@ const games = defineCollection({
         .object({
           windowsInstaller: z.string().optional(),
           linuxAppImage: z.string().optional(),
-          // Pattern for the versioned zip, matched against the latest release's assets.
+          // Patterns for the versioned portable builds, matched against the latest release's assets.
           zipPattern: z.string().optional(),
+          tarballPattern: z.string().optional(),
         })
         .optional(),
       requirements: z.string().optional(),
