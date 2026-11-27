@@ -45,7 +45,10 @@ export interface Stats {
   allVersions: { total: number; platforms: Record<Platform, number> };
   recent: Record<Platform, { count: number; label: string } | null>;
   versions: Version[];
+  /** New downloads per day of the current version only (what stats.json had before dailyAll). */
   daily: { date: string; count: number }[];
+  /** New downloads per day of every published version, with the tags released that day. Newer stats.json only. */
+  dailyAll?: { date: string; count: number; releases: string[] }[];
 }
 
 /** A stats.json this page can draw: the right schema and at least one version. */
@@ -85,7 +88,8 @@ export function renderStats(stats: Stats, open?: Set<string>): string {
   const versions = stats.versions;
   const current = versions[0];
   const maxVersion = Math.max(1, ...versions.map((v) => v.downloads));
-  const daily = stats.daily ?? [];
+  const allVersions = Array.isArray(stats.dailyAll);
+  const daily: { date: string; count: number; releases?: string[] }[] = (allVersions ? stats.dailyAll : stats.daily) ?? [];
   const maxDaily = Math.max(1, ...daily.map((d) => d.count));
   const isOpen = (v: Version, i: number) => (open ? open.has(v.tag) : i === 0);
 
@@ -122,24 +126,44 @@ export function renderStats(stats: Stats, open?: Set<string>): string {
     })
     .join('');
 
+  // Release markers: a dashed line with the tag above it. Labels of releases less than 3 days apart alternate
+  // between two rows so they don't overlap; labels near the ends sit on the inner side of their line.
+  let lastRelease = -Infinity;
+  let lastRow = 1;
+  const rows = daily.map((d, i) => {
+    if (!d.releases?.length) return -1;
+    lastRow = i - lastRelease < 3 && lastRow === 0 ? 1 : 0;
+    lastRelease = i;
+    return lastRow;
+  });
+  const hasReleases = rows.some((r) => r >= 0);
+  const what = allVersions ? 'every version' : esc(current.tag);
+
   const perDay =
     daily.length > 0
-      ? `<p class="note">Installer, zip, AppImage and tarball of ${esc(current.tag)}, both platforms together, from ` +
-        `${esc(day(daily[0].date))} to ${esc(day(daily[daily.length - 1].date))} (Central time).</p>` +
-        `<div class="cols" style="--n:${daily.length}">` +
+      ? `<p class="note">Installer, zip, AppImage and tarball of ${what}, both platforms together, from ` +
+        `${esc(day(daily[0].date))} to ${esc(day(daily[daily.length - 1].date))} (Central time).` +
+        `${hasReleases ? ' Dashed lines mark the day a version came out.' : ''}</p>` +
+        `<div class="cols${hasReleases ? ' has-rel' : ''}" style="--n:${daily.length}">` +
         daily
-          .map((d) => {
+          .map((d, i) => {
             const short = day(d.date, { month: 'short', day: 'numeric' });
+            const tags = (d.releases ?? []).join(', ');
+            const edge = i < 2 ? ' start' : i >= daily.length - 2 ? ' end' : '';
+            const released = tags ? `, ${tags} released` : '';
             return (
-              `<div class="col"><div class="track"><span class="val">${num(d.count)}</span>` +
+              `<div class="col${tags ? ` rel r${rows[i]}` : ''}">` +
+              (tags ? `<span class="rtag${edge}">${esc(tags)}</span>` : '') +
+              `<div class="track"><span class="val">${num(d.count)}</span>` +
               `<i tabindex="0" style="height:${((d.count / maxDaily) * 140).toFixed(1)}px" ` +
-              `data-tip="${esc(`${short}: ${num(d.count)} new`)}" aria-label="${esc(`${short}: ${num(d.count)} new downloads`)}"></i>` +
+              `data-tip="${esc(`${short}: ${num(d.count)} new${released}`)}" ` +
+              `aria-label="${esc(`${short}: ${num(d.count)} new downloads${released}`)}"></i>` +
               `</div><span class="date">${esc(day(d.date, { day: 'numeric' }))}</span></div>`
             );
           })
           .join('') +
         `</div>`
-      : `<p class="note">The chart appears once the snapshots of ${esc(current.tag)} span at least two days.</p>`;
+      : `<p class="note">The chart appears once the snapshots span at least two days.</p>`;
 
   const details = versions
     .map((v, i) => {

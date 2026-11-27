@@ -249,12 +249,60 @@ const stats = await getStats();
     padding-top: 8px;
   }
   .stats-page .col {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-width: 0;
   }
+  /* Release markers: tag labels in two rows above the columns, a dashed line down to the axis. */
+  .stats-page .cols.has-rel {
+    padding-top: 40px;
+  }
+  .stats-page .rtag {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--lantern);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .stats-page .rtag.start {
+    left: calc(50% - 1px);
+    transform: none;
+  }
+  .stats-page .rtag.end {
+    left: auto;
+    right: calc(50% - 1px);
+    transform: none;
+  }
+  .stats-page .r0 .rtag {
+    top: -34px;
+  }
+  .stats-page .r1 .rtag {
+    top: -18px;
+  }
+  .stats-page .rel .track::before {
+    content: '';
+    position: absolute;
+    left: calc(50% - 1px);
+    bottom: 0;
+    border-left: 2px dashed var(--lantern);
+    opacity: 0.75;
+  }
+  .stats-page .r0 .track::before {
+    top: -21px;
+  }
+  .stats-page .r1 .track::before {
+    top: -5px;
+  }
+  /* Positioned with a panel background so a release line passes behind the value, not through it. */
   .stats-page .val {
+    position: relative;
+    padding: 0 3px;
+    background: var(--panel);
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--moon-soft);
@@ -262,6 +310,7 @@ const stats = await getStats();
   }
   /* Value on the cap of each column; the tallest column is 140px, leaving room for its label. */
   .stats-page .track {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
