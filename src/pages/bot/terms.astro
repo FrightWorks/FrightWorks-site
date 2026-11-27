@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import { DISCORD_URL } from '../../lib/links';
+---
+
+<Base title="Bot terms of service" description="Terms for using the FrightWorks Discord bot.">
+  <section class="wrap page">
+    <h1 class="display">Bot terms of service</h1>
+    <p class="updated">Last updated November 26, 2026</p>
+    <div class="prose">
+      <ul>
+        <li>
+          The FrightWorks bot is provided free and as is, without any warranty. It may be wrong, change, or stop working at
+          any time.
+        </li>
+        <li>
+          Use it in line with the FrightWorks server rules and Discord's <a href="https://discord.com/terms">Terms of Service</a> and <a href="https://discord.com/guidelines">Community Guidelines</a>.
+        </li>
+        <li>Don't use it to share or request game files, disc images or other pirated content.</li>
+        <li>The FrightWorks developers can limit or remove anyone's access to the bot.</li>
+        <li>
+          FrightWorks is an unofficial fan project. It isn't affiliated with or endorsed by Warner Bros., Hanna-Barbera or
+          THQ.
+        </li>
+      </ul>
+      <p>
+        Questions: ask a Moderator in the <a href={DISCORD_URL}>FrightWorks Discord</a>. What the bot sees and keeps is in
+        the <a href="/bot/privacy/">bot privacy policy</a>.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page {
+    padding-block: 56px 96px;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    color: var(--lantern);
+  }
+  .updated {
+    margin: 0 0 24px;
+    color: var(--faint);
+  }
+</style>
