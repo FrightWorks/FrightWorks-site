@@ -19,6 +19,9 @@ pulls the `github-pages` artifact of each successful run on `main` within a few 
   `/releases/latest` links.
 - Download buttons for stably named assets (`FrightWorks-win-Setup.exe`, `FrightWorks.AppImage`) use
   `/releases/latest/download/<file>` and need no rebuild; the version label and the versioned zip need one.
+- `public/discord/no100f/*.jpg`: the area pictures the no100f game shows in a player's Discord status (Discord loads
+  them by URL, e.g. `https://frightworks.dev/discord/no100f/cemetery.jpg`). Released builds point at these exact
+  names: replace a picture in place, never rename or delete one.
 - `src/styles/global.css`: design tokens. The look is "Stormy Night": dark-only, night navy, lantern amber accent,
   Luckiest Guy display (same font as the no100f launcher) with Figtree body, both self-hosted via Fontsource.
   Keep new UI on these tokens.
